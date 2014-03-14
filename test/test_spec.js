@@ -1827,62 +1827,6 @@ describe('qlobber-fsq', function ()
         });
     });
 
-    // TODO: remove this plus the change_attr directory when in git
-    // For testing NFS change attribute support (vs a server using ctime).
-    // Won't always fail (if the time for the two writes goes over the
-    // second boundary). But if you run enough times on a server without
-    // proper change_attribute support then it will.
-    /*it('should detect new files added within 1 second', function (done)
-    {
-        fsq.stop_watching(function ()
-        {
-            var child = child_process.spawn(
-                path.join(__dirname, 'change_attr', 'change_attr_ssh.sh'),
-                ['david-desktop',
-                 new Buffer(JSON.stringify(fsq._update_dir)).toString('hex')],
-                { stdio: [0, 1, 2, 'ipc'] });
-
-            child.on('error', done);
-
-            child.on('exit', function (code, signal)
-            {
-                console.log('exit', code, signal);
-            });
-
-            child.on('message', function (msg)
-            {
-                console.log("parent got message", msg);
-
-                if (msg.type === 'start')
-                {
-                    fs.writeFile(fsq._update_dir + path.sep + 'foo', 'hello',
-                    function (err)
-                    {
-                        if (err) { return done(err); }
-                        child.send({ type: 'first' });
-                    });
-                }
-                else if (msg.type === 'first_done')
-                {
-                    if (msg.err) { return done(msg.err); }
-                    fs.writeFile(fsq._update_dir + path.sep + 'bar', 'there',
-                    function (err)
-                    {
-                        if (err) { return done(err); }
-                        child.send({ type: 'second' });
-                    });
-                }
-                else if (msg.type === 'second_done')
-                {
-                    if (msg.err) { return done(msg.err); }
-                    expect(msg.first.sort()).to.eql(['UPDATE', 'foo']);
-                    expect(msg.second.sort()).to.eql(['UPDATE', 'bar', 'foo']);
-                    done();
-                }
-           }); 
-        });
-    });*/
-
     // TODO:
     // - Test on CephFS when Firefly and Ubuntu 14.04 are released.
 });
