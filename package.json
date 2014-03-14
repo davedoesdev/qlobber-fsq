@@ -1,0 +1,70 @@
+{
+  "name": "qlobber-fsq",
+  "description": "Shared file system queue. Supports pub-sub, work queues, wildcards, multi-process and distributed use.",
+  "version": "0.0.1",
+  "homepage": "https://github.com/davedoesdev/qlobber-fsq",
+  "author": {
+    "name": "David Halls",
+    "email": "dave@davedoesdev.com",
+    "url": "http://www.davedoesdev.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davedoesdev/qlobber-fsq.git"
+  },
+  "bugs": {
+    "url": "https://github.com/davedoesdev/qlobber-fsq/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/davedoesdev/qlobber-fsq/blob/master/LICENCE"
+    }
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "grunt lint test",
+    "travis-test": "grunt lint test coverage coveralls",
+    "travis-test-stress": "grunt test-stress",
+    "travis-test-multi": "grunt test-multi",
+    "travis-test-multi-remote": "grunt test-multi --remote localhost"
+  },
+  "directories": {
+    "test": "test",
+    "lib": "lib"
+  },
+  "keywords": [
+    "amqp",
+    "mqtt",
+    "rabbitmq",
+    "cybertron",
+    "ascoltatore",
+    "qlobber",
+    "pubsub",
+    "queue",
+    "routing"
+  ],
+  "dependencies": {
+    "qlobber": "~0.3.8",
+    "async": "~0.2.9",
+    "fs-ext": "~0.3.2",
+    "buffertools": "~2.0.0",
+    "graceful-fs": "~2.0.1"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-cli": "~0.1.13",
+    "grunt-jslint": "~1.1.5",
+    "grunt-cafe-mocha": "~0.1.11",
+    "grunt-apidox": "~0.1.4",
+    "chai": "~1.9.0",
+    "istanbul": "~0.2.6",
+    "grunt-exec": "~0.4.5",
+    "coveralls": "~2.8.0",
+    "b": "git://github.com/davedoesdev/b.git",
+    "rimraf": "~2.2.6",
+    "lsof": "~0.0.3",
+    "yargs": "~1.2.1",
+    "cp-remote": "~0.0.3"
+  }
+}

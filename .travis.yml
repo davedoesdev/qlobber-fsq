@@ -1,0 +1,19 @@
+language: node_js
+node_js:
+  - 0.10
+env:
+  - TARGET=test
+  - TARGET=test-stress
+  - TARGET=test-multi
+  - TARGET=test-multi-remote
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq socat
+  - ssh-keygen -t rsa -f ~/.ssh/id_rsa -N ''
+  - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+  - ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
+  - echo . ~/.nvm/nvm.sh > ~/.bashrc.new
+  - cat ~/.bashrc >> ~/.bashrc.new
+  - mv ~/.bashrc.new ~/.bashrc
+  - ssh localhost node --version
+script: npm run travis-$TARGET
