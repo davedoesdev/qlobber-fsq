@@ -236,7 +236,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{String} [fsq_dir]` The path to the file system queue directory. Note that the following sub-directories will be created under this directory if they don't exist: `messages`, `staging`, `topics` and `update`. Defaults to a directory named `fsq` in the `qlobber-fsq` module directory.
 
-  - `{Integer} split_topic_at` Maximum number of characters in a short topic. Short topics are contained entirely in a message's filename. Long topics are split so the first `split_topic_at` characters go in the filename and the rest are written to a separate file in the `topics` sub-directory. Obviously long topics are less efficient. Defaults to 200, which is the maximum for most common file systems. Note: if your `fsq_dir` is on an `ecryptfs`[http://ecryptfs.org/] file system then you should set `split_topic_at` to 100.
+  - `{Integer} split_topic_at` Maximum number of characters in a short topic. Short topics are contained entirely in a message's filename. Long topics are split so the first `split_topic_at` characters go in the filename and the rest are written to a separate file in the `topics` sub-directory. Obviously long topics are less efficient. Defaults to 200, which is the maximum for most common file systems. Note: if your `fsq_dir` is on an [`ecryptfs`](http://ecryptfs.org/) file system then you should set `split_topic_at` to 100.
 
   - `{Integer} bucket_base`, `{Integer} bucket_num_chars` Messages are distributed across different _buckets_ for efficiency. Each bucket is a sub-directory of the `messages` directory. The number of buckets is determined by the `bucket_base` and `bucket_num_chars` options. `bucket_base` is the radix to use for bucket names and `bucket_num_chars` is the number of digits in each name. For example, `bucket_base: 26` and `bucket_num_chars: 4` results in buckets `00` through `pppp`. Defaults to `base_base: 16` and `bucket_num_chars: 2` (i.e. buckets `00` through `ff`).
 
@@ -246,11 +246,11 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{Integer} unique_bytes` Number of random bytes to append to each message's filename (encoded in hex), in order to avoid name clashes. Defaults to 16. If you increase it (or change the algorithm to add some extra information like the hostname), be sure to reduce `split_topic_at` accordingly.
 
-  - `{Integer} single_ttl` Default time-to-live (in milliseconds) for messages which should be read at most one subscriber. This value is added to the current time and the resulting expiry time is put into the message's filename. After the expiry time, the message is ignored and deleted when convenient. Defaults to 1 hour. 
+  - `{Integer} single_ttl` Default time-to-live (in milliseconds) for messages which should be read by at most one subscriber. This value is added to the current time and the resulting expiry time is put into the message's filename. After the expiry time, the message is ignored and deleted when convenient. Defaults to 1 hour. 
 
   - `{Integer} multi_ttl`. Default time-to-live (in milliseconds) for messages which can be read by many subscribers. This value is added to the current time and the resulting expiry time is put into the message's filename. After the expiry time, the message is ignored and deleted when convenient. Defaults to 5 seconds.
 
-  - `{Integer} poll_interval`. `qlobber-fsq` reads the `UPDATE` file at regular intervals to check whether any messages have been written. `poll_interval` is the time (in milliseconds) betwen each check. Defaults to 1 second.
+  - `{Integer} poll_interval`. `qlobber-fsq` reads the `UPDATE` file at regular intervals to check whether any messages have been written. `poll_interval` is the time (in milliseconds) between each check. Defaults to 1 second.
 
   - `{Boolean} notify`. Whether to use [`fs.watch`](http://nodejs.org/api/fs.html#fs_fs_watch_filename_options_listener) to watch for changes to the `UPDATE` file. Note that this will be done in addition to reading it every `poll_interval` milliseconds because `fs.watch` (`inotify` underneath) can be unreliable, especially under high load.
 
@@ -276,14 +276,14 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 **Parameters:**
 
-- `{String} topic` Which messages you're interested in receiving. Message topics are split into words using `.` as the separator. You can use `*` to match exactly one word in a topic or `#` to match zero or more words. For example, `foo.*` would match `foo.bar` whereas `foo.#` would match `foo`, `foo.bar` and `foo.bar.wup`. Note you can change these wildcard characters by specifying the `separator`, `wildcard_one` and `wildcard_some` options when [constructing `QlobberFSQ` objects](#qlobberfsq). See the [`qlobber` documentation](https://github.com/davedoesdev/qlobber#qlobberoptions) for more information.
+- `{String} topic` Which messages you're interested in receiving. Message topics are split into words using `.` as the separator. You can use `*` to match exactly one word in a topic or `#` to match zero or more words. For example, `foo.*` would match `foo.bar` whereas `foo.#` would match `foo`, `foo.bar` and `foo.bar.wup`. Note you can change these wildcard characters by specifying the `separator`, `wildcard_one` and `wildcard_some` options when [constructing `QlobberFSQ` objects](#qlobberfsqoptions). See the [`qlobber` documentation](https://github.com/davedoesdev/qlobber#qlobberoptions) for more information.
 
 
 
 - `{Object} [options]` Optional settings for this subscription:
 
 
-  - `{Boolean} stream` Whether `handler` should receive a message stream or the message contents as its first argument.
+  - `{Boolean} stream` Whether `handler` should receive a message stream or the message contents as its first argument. Defaults to `false` (the message contents).
 
 
 - `{Function} handler` Function to call when a new message is received on the file system queue and its topic matches against `topic`. `handler` will be passed the following arguments:
@@ -295,7 +295,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
     - `{String} fname` Name of the file in which the message is stored.
     - `{String} path` Full path to the file in which the message is stored.
-    - `{String} topic` Topic message was published with.
+    - `{String} topic` Topic the message was published with.
     - `{String} [topic_path]` Full path to the file in which the topic overspill is stored (only present if the topic is too long to fit in the file name).
     - `{Integer} expires` When the message expires (number of milliseconds after 1 January 1970 00:00:00 UTC).
     - `{Boolean} single` Whether this message is being given to at most one subscriber (across all `QlobberFSQ` objects).
@@ -303,7 +303,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
   - `{Function} done` Function to call once you've handled the message. Note that calling this function is only mandatory if `info.single === true`, in order to delete and unlock the file. `done` takes two arguments:
 
     - `{Object} err` If an error occurred then pass details of the error, otherwise pass `null` or `undefined`.
-    - `{Function} [finish]` Optional function to call once the message has been deleted and unlocked, in the case of `info.single === true`, or right away otherwise. It will be passed the following argument:
+    - `{Function} [finish]` Optional function to call once the message has been deleted and unlocked, in the case of `info.single === true`, or straight away otherwise. It will be passed the following argument:
     - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
 
@@ -320,11 +320,11 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 **Parameters:**
 
-- `{String} [topic]` Which messages you're no longer interested in receiving via the `handler` function. This should be a topic you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribe). If topic is `undefined` then all handlers for all topics are unsubscribed.
+- `{String} [topic]` Which messages you're no longer interested in receiving via the `handler` function. This should be a topic you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-options-handler-cb). If topic is `undefined` then all handlers for all topics are unsubscribed.
 
 
 
-- `{Function} [handler]` The function you no longer want to be called with messages published to the topic `topic`. This should be a function you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribe). If you subscribed `handler` to a different topic then it will still be called for messages which match that topic. If `handler` is undefined, all handlers for the topic `topic` are unsubscribed.
+- `{Function} [handler]` The function you no longer want to be called with messages published to the topic `topic`. This should be a function you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-options-handler-cb). If you subscribed `handler` to a different topic then it will still be called for messages which match that topic. If `handler` is undefined, all handlers for the topic `topic` are unsubscribed.
 
 
 
@@ -374,6 +374,11 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
+
+**Return:**
+
+`{Stream | undefined}` A [Writable stream](`http://nodejs.org/api/stream.html#stream_class_stream_writable`) if no `payload` was passed, otherwise `undefined`.
+
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
 
 ## QlobberFSQ.prototype.stop_watching([cb])
@@ -414,7 +419,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 > `start` event
 
-`QlobberFSQ` objects fire a `start` event when they're ready to publish messages. Don't call [`publish`](#qlobberfsqprototypepublish) until the `start` event is emitted or the message may be dropped. You can [`subscribe`](#qlobberfsqprototypesubscribe) to messages before `start` is fired, however.
+`QlobberFSQ` objects fire a `start` event when they're ready to publish messages. Don't call [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb) until the `start` event is emitted or the message may be dropped. You can [`subscribe`](#qlobberfsqprototypesubscribetopic-options-handler-cb) to messages before `start` is fired, however.
 
 A `start` event won't be fired after a `stop` event.
 
@@ -424,7 +429,7 @@ A `start` event won't be fired after a `stop` event.
 
 > `stop` event
 
-`QlobberFSQ` objects fire a `stop` event after you call [`stop_watching`](#qlobberfsqstop_watching') and they've stopped scanning for new messages. Messages already read may still be being processed, however.
+`QlobberFSQ` objects fire a `stop` event after you call [`stop_watching`](#qlobberfsqstop_watchingicb') and they've stopped scanning for new messages. Messages already read may still be being processed, however.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.events](#toc_qlobberfsqevents)</sub>
 
@@ -432,7 +437,7 @@ A `start` event won't be fired after a `stop` event.
 
 > `error` event
 
-`QlobberFSQ` objects fire an `error` event if an error occurs before `start` is emitted. The `QlobberFSQ` object is unable to continue at this point and is not scanning for new messages.
+`QlobberFSQ` objects fire an `error` event if an error occurs before [`start`](#qlobberfsqeventsstart) is emitted. The `QlobberFSQ` object is unable to continue at this point and is not scanning for new messages.
 
 **Parameters:**
 
@@ -444,7 +449,7 @@ A `start` event won't be fired after a `stop` event.
 
 > `warning` event
 
-`QlobberFSQ` objects fire a `warning` event if an error occurs after `start` is emitted. The `QlobberFSQ` object will still be scanning for new messages after emitting a `warning` event.
+`QlobberFSQ` objects fire a `warning` event if an error occurs after [`start`](##qlobberfsqeventsstart) is emitted. The `QlobberFSQ` object will still be scanning for new messages after emitting a `warning` event.
 
 **Parameters:**
 
