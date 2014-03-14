@@ -102,6 +102,8 @@ function rabbitmq_tests(name, QCons, num_queues, rounds, msglen, retry_prob, exp
                         single_sum += Buffer.isBuffer(data) ? sum(data) : data;
                         result_single.push(topic);
                         count_single += 1;
+
+                        //console.log(topic, n);
                     }
                     else
                     {
@@ -215,6 +217,8 @@ function rabbitmq_tests(name, QCons, num_queues, rounds, msglen, retry_prob, exp
                         }
 
                         expected_single_sum += s;
+
+                        //console.log(task);
 
                         async.parallel(
                         [
@@ -596,7 +600,7 @@ function MPFSQ(options)
     MPFSQBase.call(
         this,
         child_process.fork(path.join(__dirname, 'mpfsq', 'mpfsq.js'),
-                           [new Buffer(JSON.stringify([options])).toString('hex')]),
+                           [new Buffer(JSON.stringify(options)).toString('hex')]),
         options);
 }
 
@@ -635,6 +639,6 @@ describe('rabbit', function ()
         rabbitmq4('', QlobberFSQ, 26);
         rabbitmq4('', QlobberFSQ, 100);*/
 
-        rabbitmq4('multi-process ', MPFSQ, os.cpus().length);
+        rabbitmq4('multi-process ', MPFSQ, argv.queues || os.cpus().length);
     }
 });

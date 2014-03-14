@@ -26,7 +26,7 @@ var child_process = require('child_process'),
                 }
             })
             .argv,
-    fsq_dir = path.join(argv['fsq-dir'] || path.join(__dirname, '..'), 'fsq'),
+    fsq_dir = path.join(argv['fsq-dir'] || path.join(__dirname, '..', 'fsq'), 'fsq'),
     queues;
 
 if (argv.remote)

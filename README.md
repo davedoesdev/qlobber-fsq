@@ -79,9 +79,7 @@ npm install qlobber-fsq
 
 ## Limitations
 
-- `qlobber-fsq` provides no guarantee that the order messages are given to subscribers is the same as the order in which the messages were written.
-
-  If you want to maintain message order between readers and writers then you'll have to do it in your application (using ACKs, sliding windows etc).
+- `qlobber-fsq` provides no guarantee that the order messages are given to subscribers is the same as the order in which the messages were written. If you want to maintain message order between readers and writers then you'll need to do it in your application (using ACKs, sliding windows etc).
 
 - `qlobber-fsq` does its best not to lose messages but in exceptional circumstances (e.g. process crash, file system corruption) messages may get dropped. You should design your application to be resilient against dropped messages.
 
@@ -147,11 +145,13 @@ To run the stress tests (multiple queues in a single Node process):
 grunt test-stress [--fsq-dir <path>]
 ```
 
-To run the multi-core tests (one Node process per core, each one publishing and subscribing to different messages):
+To run the multi-process tests (each process publishing and subscribing to different messages):
 
 ```shell
-grunt test-multi [--fsq-dir <path>]
+grunt test-multi [--fsq-dir <path>] [--queues <number of queues>]
 ```
+
+If you omit `--queues` then one process will be created per core (detected with [`os.cpus()`](http://nodejs.org/api/os.html#os_os_cpus)).
 
 To run the distributed tests (one Node process per remote host, each one publishing and subscribing to different messages);
 

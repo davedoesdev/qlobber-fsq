@@ -45,7 +45,7 @@ process.on('message', function (msg)
     {
         handlers[msg.handler] = function (data, info, cb)
         {
-            //console.log('got', host, process.pid, msg.topic, info.topic, info.single, msg.handler);
+            //console.log('got', host, process.pid, msg.topic, info.topic, info.single, info.path, msg.handler);
 
             cbs[cb_count] = cb;
             process.send(
@@ -79,6 +79,8 @@ process.on('message', function (msg)
     }
     else if (msg.type === 'publish')
     {
+        //console.log('publishing', host, process.pid, msg.topic, msg.options);
+
         fsq.publish(msg.topic, new Buffer(msg.payload, 'base64'), msg.options,
         function (err, fname)
         {

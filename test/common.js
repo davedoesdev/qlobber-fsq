@@ -34,7 +34,7 @@ global.QlobberFSQ = require('..').QlobberFSQ;
 global.argv = require('yargs').argv;
 
 global.fsq = null;
-global.fsq_dir = path.join(argv['fsq-dir'] || __dirname, 'fsq');
+global.fsq_dir = path.join(argv['fsq-dir'] || path.join(__dirname, 'fsq'), 'fsq');
 global.msg_dir = path.join(fsq_dir, 'messages');
 global.flags = 0;
 global.retry_interval = 5;
