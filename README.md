@@ -345,7 +345,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 
 
-- `{String | Buffer} [payload]` Message payload. If you don't pass a payload then `publish` will return a [Writable stream](`http://nodejs.org/api/stream.html#stream_class_stream_writable`) for you to write the payload into.
+- `{String | Buffer} [payload]` Message payload. If you don't pass a payload then `publish` will return a [Writable stream](http://nodejs.org/api/stream.html#stream_class_stream_writable) for you to write the payload into.
 
 
 
@@ -377,7 +377,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 **Return:**
 
-`{Stream | undefined}` A [Writable stream](`http://nodejs.org/api/stream.html#stream_class_stream_writable`) if no `payload` was passed, otherwise `undefined`.
+`{Stream | undefined}` A [Writable stream](http://nodejs.org/api/stream.html#stream_class_stream_writable) if no `payload` was passed, otherwise `undefined`.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
 
@@ -421,7 +421,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 `QlobberFSQ` objects fire a `start` event when they're ready to publish messages. Don't call [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb) until the `start` event is emitted or the message may be dropped. You can [`subscribe`](#qlobberfsqprototypesubscribetopic-options-handler-cb) to messages before `start` is fired, however.
 
-A `start` event won't be fired after a `stop` event.
+A `start` event won't be fired after a [`stop`](#qlobberfsqeventsstop) event.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.events](#toc_qlobberfsqevents)</sub>
 
@@ -429,7 +429,7 @@ A `start` event won't be fired after a `stop` event.
 
 > `stop` event
 
-`QlobberFSQ` objects fire a `stop` event after you call [`stop_watching`](#qlobberfsqstop_watchingicb') and they've stopped scanning for new messages. Messages already read may still be being processed, however.
+`QlobberFSQ` objects fire a `stop` event after you call [`stop_watching`](#qlobberfsqstop_watchingcb) and they've stopped scanning for new messages. Messages already read may still be being processed, however.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.events](#toc_qlobberfsqevents)</sub>
 
@@ -449,7 +449,7 @@ A `start` event won't be fired after a `stop` event.
 
 > `warning` event
 
-`QlobberFSQ` objects fire a `warning` event if an error occurs after [`start`](##qlobberfsqeventsstart) is emitted. The `QlobberFSQ` object will still be scanning for new messages after emitting a `warning` event.
+`QlobberFSQ` objects fire a `warning` event if an error occurs after [`start`](#qlobberfsqeventsstart) is emitted. The `QlobberFSQ` object will still be scanning for new messages after emitting a `warning` event.
 
 **Parameters:**
 
