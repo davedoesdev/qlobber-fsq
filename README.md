@@ -429,7 +429,7 @@ A `start` event won't be fired after a [`stop`](#qlobberfsqeventsstop) event.
 
 > `stop` event
 
-`QlobberFSQ` objects fire a `stop` event after you call [`stop_watching`](#qlobberfsqstop_watchingcb) and they've stopped scanning for new messages. Messages already read may still be being processed, however.
+`QlobberFSQ` objects fire a `stop` event after you call [`stop_watching`](#qlobberfsqprototypestop_watchingcb) and they've stopped scanning for new messages. Messages already read may still be being processed, however.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.events](#toc_qlobberfsqevents)</sub>
 
