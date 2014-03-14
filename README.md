@@ -304,7 +304,6 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
     - `{Object} err` If an error occurred then pass details of the error, otherwise pass `null` or `undefined`.
     - `{Function} [finish]` Optional function to call once the message has been deleted and unlocked, in the case of `info.single === true`, or right away otherwise. It will be passed the following argument:
-
     - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
 
@@ -373,7 +372,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 - `{Function} [cb]` Optional function to call once the message has been written to the file system queue. This will be called after the message has been moved into its bucket and is therefore available to subscribers in any `QlobberFSQ` object scanning the queue. It will be passed the following argument:
 
 
-    - `{Object} err` If an error occurred then details of the error, otherwise `null`.
+  - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
 
