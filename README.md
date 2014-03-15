@@ -260,6 +260,8 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{Integer} bucket_concurrency`. The number of buckets to process at once. Defaults to 1.
 
+  - `{Boolean} dedup`. Whether to ensure each handler function is called at most once when a message is received. Defaults to `true`.
+
   - `{String} separator` The character to use for separating words in message topics. Defaults to `.`.
 
   - `{String} wildcard_one` The character to use for matching exactly one word in a message topic to a subscriber. Defaults to `*`.

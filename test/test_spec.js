@@ -164,6 +164,68 @@ describe('qlobber-fsq', function ()
         });
     });
 
+    it('should be able to disable handler dedup', function (done)
+    {
+        fsq.stop_watching(function ()
+        {
+            var fsq2 = new QlobberFSQ(
+            {
+                fsq_dir: fsq_dir,
+                flags: flags,
+                dedup: false
+            }), count_multi = 0, count_single = 0;
+
+            ignore_ebusy(fsq2);
+
+            function handler(data, info, cb)
+            {
+                expect(info.topic).to.equal('foo');
+                expect(data.toString('utf8')).to.equal('bar');
+
+                if (info.single)
+                {
+                    count_single += 1;
+                }
+                else
+                {
+                    count_multi += 1;
+                }
+
+                if ((count_single === 1) && (count_multi === 2))
+                {
+                    cb(null, function (err)
+                    {
+                        fsq2.stop_watching(function ()
+                        {
+                            done(err);
+                        });
+                    });
+                }
+                else if ((count_single > 1) || (count_multi > 2))
+                {
+                    throw new Error('called too many times');
+                }
+                else
+                {
+                    cb();
+                }
+            }
+
+            fsq2.subscribe('*', handler);
+            fsq2.subscribe('#', handler);
+
+            fsq2.publish('foo', 'bar', function (err)
+            {
+                if (err) { done(err); }
+            });
+
+            fsq2.publish('foo', 'bar', { single: true }, function (err)
+            {
+                if (err) { done(err); }
+            });
+        });
+    });
+
     it('should call all handlers on a topic for pubsub', function (done)
     {
         var count = 0;
