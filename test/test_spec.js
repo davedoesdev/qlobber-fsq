@@ -201,12 +201,13 @@ describe('qlobber-fsq', function ()
                         });
                     });
                 }
-                else if ((count_single > 1) || (count_multi > 2))
+                else 
                 {
-                    throw new Error('called too many times');
-                }
-                else
-                {
+                    if ((count_single > 1) || (count_multi > 2))
+                    {
+                        throw new Error('called too many times');
+                    }
+
                     cb();
                 }
             }
