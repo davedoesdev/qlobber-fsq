@@ -343,7 +343,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 **Parameters:**
 
-- `{String} topic` Message topic. The topic should be a series of words separated by `.` (or the `separator` character you provided to the [`QlobberFSQ constructor`](#qlobberfsqoptions)). Since the unencoded topic string is used as part of the message's filename, topic words can contain any valid file name character for your file system. However, it's probably sensible to limit it to alphanumeric characters, `-` and `_'.
+- `{String} topic` Message topic. The topic should be a series of words separated by `.` (or the `separator` character you provided to the [`QlobberFSQ constructor`](#qlobberfsqoptions)). Since the unencoded topic string is used as part of the message's filename, topic words can contain any valid file name character for your file system. However, it's probably sensible to limit it to alphanumeric characters, `-`, `_' and `.`.
 
 
 
