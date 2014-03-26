@@ -314,6 +314,16 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
     - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
+**Notes on handlers:**
+
+You can set two optional properties on the `handler` function, to control when messages are delivered to subscribers:
+
+  - `{Function} accept`. A function which should take message metadata (see `info` above) and return whether `handler` wants to receive this particular message. If a `handler` has no `accept` function then it's assumed to want to receive the message.
+
+  - `{Function} ready`. A function which should take message metadata (see `info` above) and return whether `handler` is ready to receive the message _at this time_. A message being given to more than one subscriber (`info.single === false`) won't be read into memory or given to _any_ `handler` until the `ready` functions for _all_ handlers return `true`. If a `handler` has no `ready` function then it's assumed to be ready to receive the message.
+
+While using `ready` functions allows `qlobber-fsq` to help you handle back-pressure in your application, it does limit message throughput to that of the slowest subscriber. You are of course free not to use `ready` functions on your subscribers and handle back-pressure yourself.
+
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
 
 ## QlobberFSQ.prototype.unsubscribe([topic], [handler], cb)

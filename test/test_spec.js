@@ -540,6 +540,59 @@ describe('qlobber-fsq', function ()
         });
     });
 
+    it('should allow handlers to delay a message', function (done)
+    {
+        restore();
+
+        var got_multi = false,
+            got_single = false,
+            count = 0;
+
+        function handler(data, info, cb)
+        {
+            expect(data.toString('utf8')).to.equal('bar');
+
+            if (info.single)
+            {
+                expect(got_single).to.equal(false);
+                got_single = true;
+            }
+            else
+            {
+                expect(got_multi).to.equal(false);
+                got_multi = true;
+            }
+
+            if (got_single && got_multi)
+            {
+                expect(count).to.equal(10);
+                cb(null, done);
+            }
+            else
+            {
+                cb();
+            }
+        }
+
+        handler.ready = function (info)
+        {
+            count += 1;
+            return (count % 5) === 0;
+        };
+
+        fsq.subscribe('foo', handler);
+
+        fsq.publish('foo', 'bar', function (err)
+        {
+            if (err) { done(err); }
+        });
+
+        fsq.publish('foo', 'bar', { single: true }, function (err)
+        {
+            if (err) { done(err); }
+        });
+    });
+
     it('should emit start and stop events', function (done)
     {
         this.timeout(30000);
