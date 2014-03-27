@@ -544,7 +544,9 @@ describe('qlobber-fsq', function ()
     {
         restore();
 
-        var got_multi = false,
+        var ready_multi = false,
+            ready_single = false,
+            got_multi = false,
             got_single = false,
             count = 0;
 
@@ -563,7 +565,7 @@ describe('qlobber-fsq', function ()
                 got_multi = true;
             }
 
-            if (got_single && got_multi)
+            if (got_single && got_multi && ready_single && ready_multi)
             {
                 expect(count).to.equal(10);
                 cb(null, done);
@@ -576,6 +578,15 @@ describe('qlobber-fsq', function ()
 
         handler.ready = function (info)
         {
+            if (info.single)
+            {
+                ready_single = true;
+            }
+            else
+            {
+                ready_multi = true;
+            }
+
             count += 1;
             return (count % 5) === 0;
         };
