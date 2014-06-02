@@ -16,7 +16,8 @@
          beforeEach: false,
          afterEach: false,
          ignore_ebusy: false,
-         retry_interval: false */
+         retry_interval: false,
+         util: false */
 /*jslint node: true, nomen: true, bitwise: true, todo: true */
 "use strict";
 
@@ -480,6 +481,9 @@ describe('qlobber-fsq', function ()
                 throw new Error('should not be called');
             }
 
+            var fsq2; 
+
+            /*jslint unparam: true */
             function handler2(data, info, cb)
             {
                 cb(null, function (err)
@@ -490,8 +494,9 @@ describe('qlobber-fsq', function ()
                     });
                 });
             }
+            /*jslint unparam: false */
 
-            var fsq2 = new QlobberFSQ(
+            fsq2 = new QlobberFSQ(
             {
                 fsq_dir: fsq_dir,
                 flags: flags,
@@ -1500,7 +1505,9 @@ describe('qlobber-fsq', function ()
 
     it('should pipe to more than one stream', function (done)
     {
-        var stream_mod = require('stream');
+        var stream_mod = require('stream'),
+            done1 = false,
+            done2 = false;
 
         function CheckStream()
         {
@@ -1523,14 +1530,14 @@ describe('qlobber-fsq', function ()
 
         util.inherits(CheckStream, stream_mod.Writable);
 
+        /*jslint unparam: true */
         CheckStream.prototype._write = function (chunk, encoding, callback)
         {
             this._len += chunk.length;
             this._hash.update(chunk);
             callback();
         };
-
-        var done1 = false, done2 = false;
+        /*jslint unparam: false */
 
         function check(obj, cb)
         {
