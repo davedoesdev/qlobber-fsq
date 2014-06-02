@@ -45,13 +45,17 @@ Or use the streaming interface to read and write messages:
 ```javascript
 var QlobberFSQ = require('qlobber-fsq').QlobberFSQ;
 var fsq = new QlobberFSQ({ fsq_dir: '/shared/fsq' });
-fsq.subscribe('foo.*', { stream: true }, function (stream, info)
+function handler(stream, info)
 {
     var data = [];
 
-    stream.on('data', function (chunk)
+    stream.on('readable', function ()
     {
-        data.push(chunk);
+        var chunk = stream.read();
+        if (chunk)
+        {
+            data.push(chunk);
+        }
     });
 
     stream.on('end', function ()
@@ -62,7 +66,9 @@ fsq.subscribe('foo.*', { stream: true }, function (stream, info)
         assert.equal(info.topic, 'foo.bar');
         assert.equal(str, 'hello');
     });
-});
+}
+handler.accepts_stream = true;
+fsq.subscribe('foo.*', handler);
 fsq.on('start', function ()
 {
     fsq.publish('foo.bar').end('hello');
@@ -96,7 +102,7 @@ tuneFileCacheType             = none
 tuneUseGlobalFileLocks        = true
 ```
 
-When using a distributed file system with `qlobber-fsq`, ensure that your synchronize the time and date on all the computers you're using.
+When using a distributed file system with `qlobber-fsq`, ensure that you synchronize the time and date on all the computers you're using.
 
 ## How it works
 
@@ -215,7 +221,6 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 ## Lifecycle
 - <a name="toc_qlobberfsqprototypestop_watchingcb"></a>[QlobberFSQ.prototype.stop_watching](#qlobberfsqprototypestop_watchingcb)
-- <a name="toc_qlobberfsqprototypeis_watching"></a>[QlobberFSQ.prototype.is_watching](#qlobberfsqprototypeis_watching)
 - <a name="toc_qlobberfsqprototyperefresh_now"></a>[QlobberFSQ.prototype.refresh_now](#qlobberfsqprototyperefresh_now)
 - <a name="toc_qlobberfsqprototypeforce_refresh"></a>[QlobberFSQ.prototype.force_refresh](#qlobberfsqprototypeforce_refresh)
 
@@ -252,11 +257,11 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{Integer} poll_interval` `qlobber-fsq` reads the `UPDATE` file at regular intervals to check whether any messages have been written. `poll_interval` is the time (in milliseconds) between each check. Defaults to 1 second.
 
-  - `{Boolean} notify` Whether to use [`fs.watch`](http://nodejs.org/api/fs.html#fs_fs_watch_filename_options_listener) to watch for changes to the `UPDATE` file. Note that this will be done in addition to reading it every `poll_interval` milliseconds because `fs.watch` (`inotify` underneath) can be unreliable, especially under high load.
+  - `{Boolean} notify` Whether to use [`fs.watch`](http://nodejs.org/api/fs.html#fs_fs_watch_filename_options_listener) to watch for changes to the `UPDATE` file. Note that this will be done in addition to reading it every `poll_interval` milliseconds because `fs.watch` (`inotify` underneath) can be unreliable, especially under high load. Defaults to `true`.
 
-  - `{Integer} retry_interval` Some I/O operations can fail with an error indicating they should be retried. `retry_interval` is the time (in milliseconds) to wait before retrying.
+  - `{Integer} retry_interval` Some I/O operations can fail with an error indicating they should be retried. `retry_interval` is the time (in milliseconds) to wait before retrying. Dfaults to 1 second.
 
-  - `{Integer} message_concurrency` The number of messages is each bucket to process at once. Defaults to 1.
+  - `{Integer} message_concurrency` The number of messages in each bucket to process at once. Defaults to 1.
 
   - `{Integer} bucket_concurrency` The number of buckets to process at once. Defaults to 1.
 
@@ -267,6 +272,8 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
   - `{String} wildcard_one` The character to use for matching exactly one word in a message topic to a subscriber. Defaults to `*`.
 
   - `{String} wildcard_some` The character to use for matching zero or more words in a message topic to a subscriber. Defaults to `#`.
+
+  - `{Function (info, handlers, cb(err, ready, filtered_handlers))} filter` Function called before each message is processed. You can use this to filter the subscribed handler functions to be called for the message (by passing the filtered list as the third argument to `cb`). If you want to ignore the message _at this time_ then pass `false` as the second argument to `cb`. `filter` will be called again later with the same message. Defaults to a function which calls `cb(null, true, handlers)`.
 
 <sub>Go: [TOC](#tableofcontents)</sub>
 
@@ -291,7 +298,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 - `{Function} handler` Function to call when a new message is received on the file system queue and its topic matches against `topic`. `handler` will be passed the following arguments:
 
 
-  - `{Buffer|Stream} data` Message stream or message contents, depending on `options.stream`.
+  - `{Readable|Buffer} data` [Readable](http://nodejs.org/api/stream.html#stream_class_stream_readable) stream or message content as a [Buffer](http://nodejs.org/api/buffer.html#buffer_class_buffer). By default you'll receive the message content. If `handler` has a property `accept_stream` set to a truthy value then you'll receive a stream. Note that _all_ subscribers will receive the same stream or contents for each message. You should take this into account when reading from the stream. The stream can be piped into multiple [Writable](http://nodejs.org/api/stream.html#stream_class_stream_writable) streams but bear in mind it will go at the rate of the slowest one.
 
   - `{Object} info` Metadata for the message, with the following properties:
 
@@ -313,16 +320,6 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 
     - `{Object} err` If an error occurred then details of the error, otherwise `null`.
-
-**Notes on handlers:**
-
-You can set two optional properties on the `handler` function, to control when messages are delivered to subscribers:
-
-  - `{Function} accept`. A function which should take message metadata (see `info` above) and return whether `handler` wants to receive this particular message. If a `handler` has no `accept` function then it's assumed to want to receive the message.
-
-  - `{Function} ready`. A function which should take message metadata (see `info` above) and return whether `handler` is ready to receive the message _at this time_. A message being given to more than one subscriber (`info.single === false`) won't be read into memory or given to _any_ `handler` until the `ready` functions for _all_ handlers return `true`. If a `handler` has no `ready` function then it's assumed to be ready to receive the message.
-
-While using `ready` functions allows `qlobber-fsq` to help you handle back-pressure in your application, it does limit message throughput to that of the slowest subscriber. You are of course free not to use `ready` functions on your subscribers and handle back-pressure yourself.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
 
@@ -400,16 +397,6 @@ While using `ready` functions allows `qlobber-fsq` to help you handle back-press
 **Parameters:**
 
 - `{Function]} [cb]` Optional function to call once scanning has stopped. Alternatively, you can listen for the [`stop` event](#qlobberfsqeventsstop).
-
-<sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
-
-## QlobberFSQ.prototype.is_watching()
-
-> Return whether this `QlobberFSQ` object is scanning for messages.
-
-**Return:**
-
-`{Boolean}` Whether new messages will be detected.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
 

@@ -116,6 +116,71 @@ describe('qlobber-fsq', function ()
         });
     });
 
+    it('should construct received data only once', function (done)
+    {
+        var the_data = { foo: 0.435, bar: 'hello' },
+            called1 = false,
+            called2 = false,
+            received_data;
+
+        fsq.subscribe('test', function (data, info, cb)
+        {
+            expect(info.topic).to.equal('test');
+            expect(JSON.parse(data)).to.eql(the_data);
+
+            if (received_data)
+            {
+                expect(data === received_data).to.equal(true);
+            }
+            else
+            {
+                received_data = data;
+            }
+
+            called1 = true;
+
+            if (called1 && called2)
+            {
+                cb(null, done);
+            }
+            else
+            {
+                cb();
+            }
+        });
+
+        fsq.subscribe('test', function (data, info, cb)
+        {
+            expect(info.topic).to.equal('test');
+            expect(JSON.parse(data)).to.eql(the_data);
+
+            if (received_data)
+            {
+                expect(data === received_data).to.equal(true);
+            }
+            else
+            {
+                received_data = data;
+            }
+
+            called2 = true;
+
+            if (called1 && called2)
+            {
+                cb(null, done);
+            }
+            else
+            {
+                cb();
+            }
+        });
+
+        fsq.publish('test', JSON.stringify(the_data), function (err)
+        {
+            if (err) { done(err); }
+        });
+    });
+
     it('should subscribe to wildcards', function (done)
     {
         var count = 0;
@@ -408,113 +473,14 @@ describe('qlobber-fsq', function ()
 
     it('should allow handlers to refuse work', function (done)
     {
-        function handler1()
+        fsq.stop_watching(function ()
         {
-            throw new Error('should not be called');
-        }
-
-        handler1.accept = function ()
-        {
-            return false;
-        };
-
-        function handler2()
-        {
-            done();
-        }
-
-        fsq.subscribe('foo', handler1);
-        fsq.subscribe('foo', handler2);
-
-        fsq.publish('foo', 'bar', function (err)
-        {
-            if (err) { done(err); }
-        });
-    });
-
-    it('should put work back on queue for another handler', function (done)
-    {
-        var accept_called = false;
-
-        /*jslint unparam: true */
-        function handler(data, info, cb)
-        {
-            cb('dummy failure');
-        }
-        /*jslint unparam: false */
-
-        handler.accept = function (info)
-        {
-            expect(info.topic).to.equal('foo');
-            expect(info.single).to.equal(true);
-
-            if (accept_called)
+            function handler1()
             {
-                return false;
+                throw new Error('should not be called');
             }
 
-            accept_called = true;
-            return true;
-        };
-
-        fsq.subscribe('foo', handler);
-
-        /*jslint unparam: true */
-        fsq.subscribe('foo', function (data, info, cb)
-        {
-            if (accept_called)
-            {
-                cb(null, done);
-            }
-            else
-            {
-                cb('dummy failure2');
-            }
-        });
-        /*jslint unparam: false */
-
-        fsq.publish('foo', 'bar', { single: true }, function (err)
-        {
-            if (err) { done(err); }
-        });
-    });
-
-    it('should put work back on queue for a handler on another queue', function (done)
-    {
-        this.timeout(30000);
-
-        var accept_called = false, fsq2;
-
-        /*jslint unparam: true */
-        function handler(data, info, cb)
-        {
-            cb('dummy failure');
-        }
-        /*jslint unparam: false */
-
-        handler.accept = function (info)
-        {
-            expect(info.topic).to.equal('foo');
-            expect(info.single).to.equal(true);
-
-            if (accept_called)
-            {
-                return false;
-            }
-
-            accept_called = true;
-            return true;
-        };
-
-        fsq.subscribe('foo', handler);
-
-        fsq2 = new QlobberFSQ({ fsq_dir: fsq_dir, flags: flags });
-        ignore_ebusy(fsq2);
-
-        /*jslint unparam: true */
-        fsq2.subscribe('foo', function (data, info, cb)
-        {
-            if (accept_called)
+            function handler2(data, info, cb)
             {
                 cb(null, function (err)
                 {
@@ -524,18 +490,192 @@ describe('qlobber-fsq', function ()
                     });
                 });
             }
-            else
-            {
-                cb('dummy failure2');
-            }
-        });
-        /*jslint unparam: false */
 
-        fsq2.on('start', function ()
-        {
-            fsq.publish('foo', 'bar', { single: true }, function (err)
+            var fsq2 = new QlobberFSQ(
             {
-                if (err) { done(err); }
+                fsq_dir: fsq_dir,
+                flags: flags,
+                filter: function (info, handlers, cb)
+                {
+                    expect(info.topic).to.equal('foo');
+
+                    cb(null, true, handlers.filter(function (h)
+                    {
+                        return h !== handler1;
+                    }));
+                }
+            });
+
+            ignore_ebusy(fsq2);
+
+            fsq2.subscribe('foo', handler1);
+            fsq2.subscribe('foo', handler2);
+
+            fsq2.on('start', function ()
+            {
+                fsq2.publish('foo', 'bar', function (err)
+                {
+                    if (err) { done(err); }
+                });
+            });
+        });
+    });
+
+    it('should put work back on queue for another handler', function (done)
+    {
+        fsq.stop_watching(function ()
+        {
+            /*jslint unparam: true */
+            function handler(data, info, cb)
+            {
+                cb('dummy failure');
+            }
+            /*jslint unparam: false */
+
+            var filter_called = false,
+                fsq2 = new QlobberFSQ(
+                {
+                    fsq_dir: fsq_dir,
+                    flags: flags,
+                    filter: function (info, handlers, cb)
+                    {
+                        expect(info.topic).to.equal('foo');
+                        expect(info.single).to.equal(true);
+
+                        if (filter_called)
+                        {
+                            return cb(null, true, handlers.filter(function (h)
+                            {
+                                return h !== handler;
+                            }));
+                        }
+
+                        filter_called = true;
+                        cb(null, true, handlers);
+                    }
+                });
+
+            ignore_ebusy(fsq2);
+
+            fsq2.subscribe('foo', handler);
+
+            /*jslint unparam: true */
+            fsq2.subscribe('foo', function (data, info, cb)
+            {
+                if (filter_called)
+                {
+                    cb(null, function (err)
+                    {
+                        fsq2.stop_watching(function ()
+                        {
+                            done(err);
+                        });
+                    });
+                }
+                else
+                {
+                    cb('dummy failure2');
+                }
+            });
+            /*jslint unparam: false */
+
+            fsq2.on('start', function ()
+            {
+                fsq2.publish('foo', 'bar', { single: true }, function (err)
+                {
+                    if (err) { done(err); }
+                });
+            });
+        });
+    });
+
+    it('should put work back on queue for a handler on another queue', function (done)
+    {
+        this.timeout(30000);
+
+        fsq.stop_watching(function ()
+        {
+            /*jslint unparam: true */
+            function handler(data, info, cb)
+            {
+                cb('dummy failure');
+            }
+            /*jslint unparam: false */
+
+            var filter_called = false,
+                fsq2 = new QlobberFSQ(
+                {
+                    fsq_dir: fsq_dir,
+                    flags: flags,
+                    filter: function (info, handlers, cb)
+                    {
+                        expect(info.topic).to.equal('foo');
+                        expect(info.single).to.equal(true);
+
+                        if (filter_called)
+                        {
+                            return cb(null, true, handlers.filter(function (h)
+                            {
+                                return h !== handler;
+                            }));
+                        }
+
+                        filter_called = true;
+                        cb(null, true, handlers);
+                    }
+                }),
+                fsq3 = new QlobberFSQ({ fsq_dir: fsq_dir, flags: flags }),
+                started2 = false,
+                started3 = false;
+
+            ignore_ebusy(fsq2);
+            ignore_ebusy(fsq3);
+
+            fsq2.subscribe('foo', handler);
+
+            /*jslint unparam: true */
+            fsq3.subscribe('foo', function (data, info, cb)
+            {
+                if (filter_called)
+                {
+                    cb(null, function (err)
+                    {
+                        fsq2.stop_watching(function ()
+                        {
+                            fsq3.stop_watching(function ()
+                            {
+                                done(err);
+                            });
+                        });
+                    });
+                }
+                else
+                {
+                    cb('dummy failure2');
+                }
+            });
+            /*jslint unparam: false */
+
+            function start()
+            {
+                if (!(started2 && started3)) { return; }
+
+                fsq2.publish('foo', 'bar', { single: true }, function (err)
+                {
+                    if (err) { done(err); }
+                });
+            }
+
+            fsq2.on('start', function ()
+            {
+                started2 = true;
+                start();
+            });
+
+            fsq3.on('start', function ()
+            {
+                started3 = true;
+                start();
             });
         });
     });
@@ -544,63 +684,82 @@ describe('qlobber-fsq', function ()
     {
         restore();
 
-        var ready_multi = false,
-            ready_single = false,
-            got_multi = false,
-            got_single = false,
-            count = 0;
-
-        function handler(data, info, cb)
+        fsq.stop_watching(function ()
         {
-            expect(data.toString('utf8')).to.equal('bar');
+            var ready_multi = false,
+                ready_single = false,
+                got_multi = false,
+                got_single = false,
+                count = 0,
+                fsq2 = new QlobberFSQ(
+                {
+                    fsq_dir: fsq_dir,
+                    flags: flags,
+                    filter: function (info, handlers, cb)
+                    {
+                        expect(info.topic).to.equal('foo');
 
-            if (info.single)
+                        if (info.single)
+                        {
+                            ready_single = true;
+                        }
+                        else
+                        {
+                            ready_multi = true;
+                        }
+
+                        count += 1;
+                        cb(null, (count % 5) === 0, handlers);
+                    }
+                });
+
+            function handler(data, info, cb)
             {
-                expect(got_single).to.equal(false);
-                got_single = true;
+                expect(data.toString('utf8')).to.equal('bar');
+
+                if (info.single)
+                {
+                    expect(got_single).to.equal(false);
+                    got_single = true;
+                }
+                else
+                {
+                    expect(got_multi).to.equal(false);
+                    got_multi = true;
+                }
+
+                if (got_single && got_multi && ready_single && ready_multi)
+                {
+                    expect(count).to.equal(10);
+
+                    cb(null, function (err)
+                    {
+                        fsq2.stop_watching(function ()
+                        {
+                            done(err);
+                        });
+                    });
+                }
+                else
+                {
+                    cb();
+                }
             }
-            else
+
+            fsq2.subscribe('foo', handler);
+
+            fsq2.on('start', function ()
             {
-                expect(got_multi).to.equal(false);
-                got_multi = true;
-            }
+                fsq2.publish('foo', 'bar', function (err)
+                {
+                    if (err) { done(err); }
+                });
 
-            if (got_single && got_multi && ready_single && ready_multi)
-            {
-                expect(count).to.equal(10);
-                cb(null, done);
-            }
-            else
-            {
-                cb();
-            }
-        }
-
-        handler.ready = function (info)
-        {
-            if (info.single)
-            {
-                ready_single = true;
-            }
-            else
-            {
-                ready_multi = true;
-            }
-
-            count += 1;
-            return (count % 5) === 0;
-        };
-
-        fsq.subscribe('foo', handler);
-
-        fsq.publish('foo', 'bar', function (err)
-        {
-            if (err) { done(err); }
-        });
-
-        fsq.publish('foo', 'bar', { single: true }, function (err)
-        {
-            if (err) { done(err); }
+                fsq2.publish('foo', 'bar', { single: true }, function (err)
+                {
+                    if (err) { done(err); }
+                });
+            });
         });
     });
 
@@ -637,28 +796,6 @@ describe('qlobber-fsq', function ()
         });
 
         fsq.publish('foo', 'bar', { ttl: 500 }, function (err)
-        {
-            if (err) { done(err); }
-        });
-    });
-
-    it("should return whether it's watching", function (done)
-    {
-        expect(fsq.is_watching()).to.equal(true);
-
-        /*jslint unparam: true */
-        fsq.subscribe('foo', function (data, info, cb)
-        {
-            expect(fsq.is_watching()).to.equal(true);
-            fsq.stop_watching(function ()
-            {
-                expect(fsq.is_watching()).to.equal(false);
-                done();
-            });
-        });
-        /*jslint unparam: false */
-
-        fsq.publish('foo', 'bar', function (err)
         {
             if (err) { done(err); }
         });
@@ -1283,7 +1420,7 @@ describe('qlobber-fsq', function ()
             pub_multi_called = false,
             pub_single_called = false;
 
-        fsq.subscribe('foo', { stream: true }, function (stream, info, cb)
+        function handler(stream, info, cb)
         {
             if (info.single)
             {
@@ -1299,10 +1436,15 @@ describe('qlobber-fsq', function ()
             var hash = crypto.createHash('sha256'),
                 len = 0;
 
-            stream.on('data', function (chunk)
+            stream.on('readable', function ()
             {
-                len += chunk.length;
-                hash.update(chunk);
+                var chunk = stream.read();
+
+                if (chunk)
+                {
+                    len += chunk.length;
+                    hash.update(chunk);
+                }
             });
 
             stream.on('end', function ()
@@ -1320,8 +1462,12 @@ describe('qlobber-fsq', function ()
                     cb();
                 }
             });
-        });
+        }
 
+        handler.accepts_stream = true;
+        
+        fsq.subscribe('foo', handler);
+        
         function published(err)
         {
             if (err) { return done(err); }
@@ -1352,26 +1498,46 @@ describe('qlobber-fsq', function ()
         stream_file.pipe(stream_single);
     });
 
-    it('should call the same handler for stream and non-stream subscriptions', function (done)
+    it('should pipe to more than one stream', function (done)
     {
-        var called_buffer = false,
-            called_stream = false;
+        var stream_mod = require('stream');
 
-        /*jslint unparam: true */
-        function handler(data, info, cb)
+        function CheckStream()
         {
-            if (Buffer.isBuffer(data))
-            {
-                expect(called_buffer).to.equal(false);
-                called_buffer = true;
-            }
-            else
-            {
-                expect(called_stream).to.equal(false);
-                called_stream = true;
-            }
+            stream_mod.Writable.call(this);
 
-            if (called_buffer && called_stream)
+            this._hash = crypto.createHash('sha256');
+            this._len = 0;
+
+            var ths = this;
+
+            this.on('finish', function ()
+            {
+                ths.emit('done',
+                {
+                    digest: ths._hash.digest('hex'),
+                    len: ths._len
+                });
+            });
+        }
+
+        util.inherits(CheckStream, stream_mod.Writable);
+
+        CheckStream.prototype._write = function (chunk, encoding, callback)
+        {
+            this._len += chunk.length;
+            this._hash.update(chunk);
+            callback();
+        };
+
+        var done1 = false, done2 = false;
+
+        function check(obj, cb)
+        {
+            expect(obj.len).to.equal(1024 * 1024);
+            expect(obj.digest).to.equal('268e1a23a9da868b62b12e020061c98449568c4af9cf9070c8738fe1b457ed9c');
+
+            if (done1 && done2)
             {
                 cb(null, done);
             }
@@ -1380,10 +1546,81 @@ describe('qlobber-fsq', function ()
                 cb();
             }
         }
+
+        /*jslint unparam: true */
+        function handler1(stream, info, cb)
+        {
+            var cs = new CheckStream();
+
+            cs.on('done', function (obj)
+            {
+                done1 = true;
+                check(obj, cb);
+            });
+
+            stream.pipe(cs);
+        }
+
+        function handler2(stream, info, cb)
+        {
+            var cs = new CheckStream();
+
+            cs.on('done', function (obj)
+            {
+                done2 = true;
+                check(obj, cb);
+            });
+
+            stream.pipe(cs);
+        }
         /*jslint unparam: false */
 
+        handler1.accepts_stream = true;
+        fsq.subscribe('foo', handler1);
+
+        handler2.accepts_stream = true;
+        fsq.subscribe('foo', handler2);
+
+        fs.createReadStream(path.join(__dirname, 'fixtures', 'random')).pipe(
+        fsq.publish('foo', function (err)
+        {
+            if (err) { return done(err); }
+        }));
+    });
+
+    it('should not call the same handler with stream and data', function (done)
+    {
+        /*jslint unparam: true */
+        function handler(stream, info, cb)
+        {
+            expect(Buffer.isBuffer(stream)).to.equal(false);
+
+            var hash = crypto.createHash('sha256'),
+                len = 0;
+
+            stream.on('readable', function ()
+            {
+                var chunk = stream.read();
+
+                if (chunk)
+                {
+                    len += chunk.length;
+                    hash.update(chunk);
+                }
+            });
+
+            stream.on('end', function ()
+            {
+                expect(len).to.equal(1024 * 1024);
+                expect(hash.digest('hex')).to.equal('268e1a23a9da868b62b12e020061c98449568c4af9cf9070c8738fe1b457ed9c');
+                cb(null, done);
+            });
+        }
+        /*jslint unparam: false */
+
+        handler.accepts_stream = true;
+
         fsq.subscribe('foo', handler);
-        fsq.subscribe('foo', { stream: true }, handler);
 
         fs.createReadStream(path.join(__dirname, 'fixtures', 'random')).pipe(
         fsq.publish('foo', function (err)
@@ -1538,7 +1775,7 @@ describe('qlobber-fsq', function ()
             ignore_ebusy(fsq2);
 
             /*jslint unparam: true */
-            fsq2.subscribe('foo', { stream: true }, function (stream, info, cb)
+            function handler (stream, info, cb)
             {
                 expect(in_call).to.equal(false);
 
@@ -1566,8 +1803,12 @@ describe('qlobber-fsq', function ()
                         stream.on('data', function () { return undefined; });
                     }, 5 * 1000);
                 }
-            });
+            }
             /*jslint unparam: false */
+
+            handler.accepts_stream = true;
+            
+            fsq2.subscribe('foo', handler);
 
             fsq2.on('start', function ()
             {
@@ -1611,7 +1852,7 @@ describe('qlobber-fsq', function ()
             ignore_ebusy(fsq2);
 
             /*jslint unparam: true */
-            fsq2.subscribe('foo', { stream: true }, function (stream, info, cb)
+            function handler(stream, info, cb)
             {
                 expect(in_call).to.be.at.most(9);
 
@@ -1639,8 +1880,12 @@ describe('qlobber-fsq', function ()
                         stream.on('data', function () { return undefined; });
                     }, 5 * 1000);
                 }
-            });
+            }
             /*jslint unparam: false */
+            
+            handler.accepts_stream = true;
+
+            fsq2.subscribe('foo', handler);
 
             fsq2.on('start', function ()
             {
