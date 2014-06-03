@@ -182,6 +182,131 @@ describe('qlobber-fsq', function ()
         });
     });
 
+    it('should support more than 10 subscribers', function (done)
+    {
+        var the_data = { foo: 0.435, bar: 'hello' },
+            counter = 11,
+            received_data,
+            a = [],
+            i;
+
+        function subscribe(cb)
+        {
+            fsq.subscribe('test', function (data, info, cb)
+            {
+                expect(info.topic).to.equal('test');
+                expect(JSON.parse(data)).to.eql(the_data);
+
+                if (received_data)
+                {
+                    expect(data === received_data).to.equal(true);
+                }
+                else
+                {
+                    received_data = data;
+                }
+
+                counter -= 1;
+
+                if (counter === 0)
+                {
+                    cb(null, done);
+                }
+                else
+                {
+                    cb();
+                }
+            }, cb);
+        }
+
+        for (i = counter; i > 0; i -= 1)
+        {
+            a.push(subscribe);
+        }
+
+        async.parallel(a, function (err)
+        {
+            if (err) { return done(err); }
+
+            fsq.publish('test', JSON.stringify(the_data), function (err)
+            {
+                if (err) { done(err); }
+            });
+        });
+    });
+
+    it('should support more than 10 subscribers with same handler', function (done)
+    {
+        fsq.stop_watching(function ()
+        {
+            var fsq2 = new QlobberFSQ(
+            {
+                fsq_dir: fsq_dir,
+                flags: flags,
+                dedup: false
+            }),
+            the_data = { foo: 0.435, bar: 'hello' },
+            counter = 11,
+            received_data,
+            a = [],
+            i;
+
+            ignore_ebusy(fsq2);
+
+            function handler(data, info, cb)
+            {
+                expect(info.topic).to.equal('test');
+                expect(JSON.parse(data)).to.eql(the_data);
+
+                if (received_data)
+                {
+                    expect(data === received_data).to.equal(true);
+                }
+                else
+                {
+                    received_data = data;
+                }
+
+                counter -= 1;
+
+                if (counter === 0)
+                {
+                    cb(null, function (err)
+                    {
+                        fsq2.stop_watching(function ()
+                        {
+                            done(err);
+                        });
+                    });
+                }
+                else
+                {
+                    cb();
+                }
+            }
+
+            function subscribe(cb)
+            {
+                fsq2.subscribe('test', handler, cb);
+            }
+
+            for (i = counter; i > 0; i -= 1)
+            {
+                a.push(subscribe);
+            }
+
+            async.parallel(a, function (err)
+            {
+                if (err) { return done(err); }
+
+                fsq2.publish('test', JSON.stringify(the_data), function (err)
+                {
+                    if (err) { done(err); }
+                });
+            });
+        });
+    });
+
     it('should subscribe to wildcards', function (done)
     {
         var count = 0;
