@@ -295,13 +295,16 @@ describe('qlobber-fsq', function ()
                 a.push(subscribe);
             }
 
-            async.parallel(a, function (err)
+            fsq2.on('start', function ()
             {
-                if (err) { return done(err); }
-
-                fsq2.publish('test', JSON.stringify(the_data), function (err)
+                async.parallel(a, function (err)
                 {
-                    if (err) { done(err); }
+                    if (err) { return done(err); }
+
+                    fsq2.publish('test', JSON.stringify(the_data), function (err)
+                    {
+                        if (err) { done(err); }
+                    });
                 });
             });
         });
@@ -403,17 +406,20 @@ describe('qlobber-fsq', function ()
                 }
             }
 
-            fsq2.subscribe('*', handler);
-            fsq2.subscribe('#', handler);
-
-            fsq2.publish('foo', 'bar', function (err)
+            fsq2.on('start', function ()
             {
-                if (err) { done(err); }
-            });
+                fsq2.subscribe('*', handler);
+                fsq2.subscribe('#', handler);
 
-            fsq2.publish('foo', 'bar', { single: true }, function (err)
-            {
-                if (err) { done(err); }
+                fsq2.publish('foo', 'bar', function (err)
+                {
+                    if (err) { done(err); }
+                });
+
+                fsq2.publish('foo', 'bar', { single: true }, function (err)
+                {
+                    if (err) { done(err); }
+                });
             });
         });
     });
