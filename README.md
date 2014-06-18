@@ -4,7 +4,7 @@ Shared file system queue for Node.js.
 
 - Supports pub-sub and work queues.
 - Supports local file system for multi-core use.
-- Tested with [FraunhoferFS (BeeGFS)](http://www.fhgfs.com/) for distributed use ([CephFS](http://ceph.com/ceph-storage/file-system/) testing in progress).
+- Tested with [FraunhoferFS (BeeGFS)](http://www.fhgfs.com/) and [CephFS](http://ceph.com/ceph-storage/file-system/) for distributed use.
 - Highly configurable.
 - Full set of unit tests, including stress tests.
 - Use as a backend-less alternative to [RabbitMQ](http://www.rabbitmq.com/), [Redis pub-sub](http://redis.io/topics/pubsub) etc.
@@ -93,7 +93,11 @@ npm install qlobber-fsq
 
 - `qlobber-fsq` supports Node 0.10 onwards.
 
-## FraunhoferFS (BeeGFS)
+## Distributed filesystems
+
+Note: When using a distributed file system with `qlobber-fsq`, ensure that you synchronize the time and date on all the computers you're using.
+
+### FraunhoferFS (BeeGFS)
 
 When using the FraunhoferFS distributed file system, set the following options in `fhgfs-client.conf`:
 
@@ -102,7 +106,11 @@ tuneFileCacheType             = none
 tuneUseGlobalFileLocks        = true
 ```
 
-When using a distributed file system with `qlobber-fsq`, ensure that you synchronize the time and date on all the computers you're using.
+`qlobber-fsq` has been tested with FraunhoferFS 2014.01 on Ubuntu 14.04 and FraunhoferFS 2012.10 on Ubuntu 13.10.
+
+### CephFS
+
+`qlobber-fsq` has been tested with CephFS 0.80 on Ubuntu 14.04. Note that you'll need to [upgrade your kernel](http://www.yourownlinux.com/2014/04/install-upgrade-to-linux-kernel-3-14-1-in-linux.html) to at least 3.14.1 in order to get the fix for [a bug](http://tracker.ceph.com/issues/7371) in CephFS.
 
 ## How it works
 
