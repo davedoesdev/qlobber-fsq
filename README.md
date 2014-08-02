@@ -67,7 +67,7 @@ function handler(stream, info)
         assert.equal(str, 'hello');
     });
 }
-handler.accepts_stream = true;
+handler.accept_stream = true;
 fsq.subscribe('foo.*', handler);
 fsq.on('start', function ()
 {
@@ -187,7 +187,7 @@ grunt lint
 ## Code Coverage
 
 ```shell
-grunt coverage
+grunt coverage [--fsq-dir <path>]
 ```
 
 [Instanbul](http://gotwarlost.github.io/istanbul/) results are available [here](http://githubraw.herokuapp.com/davedoesdev/qlobber-fsq/master/coverage/lcov-report/index.html).
@@ -223,7 +223,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 - <a name="toc_qlobberfsqoptions"></a>[QlobberFSQ](#qlobberfsqoptions)
 
 ## Publish and subscribe
-- <a name="toc_qlobberfsqprototypesubscribetopic-options-handler-cb"></a><a name="toc_qlobberfsqprototype"></a>[QlobberFSQ.prototype.subscribe](#qlobberfsqprototypesubscribetopic-options-handler-cb)
+- <a name="toc_qlobberfsqprototypesubscribetopic-handler-cb"></a><a name="toc_qlobberfsqprototype"></a>[QlobberFSQ.prototype.subscribe](#qlobberfsqprototypesubscribetopic-handler-cb)
 - <a name="toc_qlobberfsqprototypeunsubscribetopic-handler-cb"></a>[QlobberFSQ.prototype.unsubscribe](#qlobberfsqprototypeunsubscribetopic-handler-cb)
 - <a name="toc_qlobberfsqprototypepublishtopic-payload-options-cb"></a>[QlobberFSQ.prototype.publish](#qlobberfsqprototypepublishtopic-payload-options-cb)
 
@@ -287,7 +287,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 <a name="qlobberfsqprototype"></a>
 
-## QlobberFSQ.prototype.subscribe(topic, [options], handler, cb)
+## QlobberFSQ.prototype.subscribe(topic, handler, cb)
 
 > Subscribe to messages in the file system queue.
 
@@ -295,12 +295,6 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 - `{String} topic` Which messages you're interested in receiving. Message topics are split into words using `.` as the separator. You can use `*` to match exactly one word in a topic or `#` to match zero or more words. For example, `foo.*` would match `foo.bar` whereas `foo.#` would match `foo`, `foo.bar` and `foo.bar.wup`. Note you can change the separator and wildcard characters by specifying the `separator`, `wildcard_one` and `wildcard_some` options when [constructing `QlobberFSQ` objects](#qlobberfsqoptions). See the [`qlobber` documentation](https://github.com/davedoesdev/qlobber#qlobberoptions) for more information.
 
-
-
-- `{Object} [options]` Optional settings for this subscription:
-
-
-  - `{Boolean} stream` Whether `handler` should receive a message stream or the message contents as its first argument. Defaults to `false` (the message contents).
 
 
 - `{Function} handler` Function to call when a new message is received on the file system queue and its topic matches against `topic`. `handler` will be passed the following arguments:
@@ -337,11 +331,11 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 **Parameters:**
 
-- `{String} [topic]` Which messages you're no longer interested in receiving via the `handler` function. This should be a topic you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-options-handler-cb). If topic is `undefined` then all handlers for all topics are unsubscribed.
+- `{String} [topic]` Which messages you're no longer interested in receiving via the `handler` function. This should be a topic you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-cb). If topic is `undefined` then all handlers for all topics are unsubscribed.
 
 
 
-- `{Function} [handler]` The function you no longer want to be called with messages published to the topic `topic`. This should be a function you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-options-handler-cb). If you subscribed `handler` to a different topic then it will still be called for messages which match that topic. If `handler` is undefined, all handlers for the topic `topic` are unsubscribed.
+- `{Function} [handler]` The function you no longer want to be called with messages published to the topic `topic`. This should be a function you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-cb). If you subscribed `handler` to a different topic then it will still be called for messages which match that topic. If `handler` is undefined, all handlers for the topic `topic` are unsubscribed.
 
 
 

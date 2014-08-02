@@ -1600,7 +1600,7 @@ describe('qlobber-fsq', function ()
             });
         }
 
-        handler.accepts_stream = true;
+        handler.accept_stream = true;
         
         fsq.subscribe('foo', handler);
         
@@ -1713,10 +1713,10 @@ describe('qlobber-fsq', function ()
         }
         /*jslint unparam: false */
 
-        handler1.accepts_stream = true;
+        handler1.accept_stream = true;
         fsq.subscribe('foo', handler1);
 
-        handler2.accepts_stream = true;
+        handler2.accept_stream = true;
         fsq.subscribe('foo', handler2);
 
         fs.createReadStream(path.join(__dirname, 'fixtures', 'random')).pipe(
@@ -1756,7 +1756,7 @@ describe('qlobber-fsq', function ()
         }
         /*jslint unparam: false */
 
-        handler.accepts_stream = true;
+        handler.accept_stream = true;
 
         fsq.subscribe('foo', handler);
 
@@ -1944,7 +1944,7 @@ describe('qlobber-fsq', function ()
             }
             /*jslint unparam: false */
 
-            handler.accepts_stream = true;
+            handler.accept_stream = true;
             
             fsq2.subscribe('foo', handler);
 
@@ -2021,7 +2021,7 @@ describe('qlobber-fsq', function ()
             }
             /*jslint unparam: false */
             
-            handler.accepts_stream = true;
+            handler.accept_stream = true;
 
             fsq2.subscribe('foo', handler);
 
