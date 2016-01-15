@@ -1,7 +1,6 @@
 sudo: false
 language: node_js
 node_js:
-  - "0.12"
   - "4.2"
 env:
   - TARGET=test
@@ -17,6 +16,6 @@ before_install:
   - echo . ~/.nvm/nvm.sh > ~/.bashrc.new
   - cat ~/.bashrc >> ~/.bashrc.new
   - mv ~/.bashrc.new ~/.bashrc
-  - nvm alias default 0.12
+  - nvm alias default 4.2
   - ssh localhost node --version
 script: npm run travis-$TARGET
