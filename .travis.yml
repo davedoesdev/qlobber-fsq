@@ -6,6 +6,8 @@ addons:
   apt:
     packages:
       - socat
+      - gcc-4.8
+      - g++-4.8
 env:
   - TARGET=test
   - TARGET=test-stress
