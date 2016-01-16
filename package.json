@@ -1,7 +1,7 @@
 {
   "name": "qlobber-fsq",
   "description": "Shared file system queue. Supports pub-sub, work queues, wildcards, multi-process and distributed use.",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "homepage": "https://github.com/davedoesdev/qlobber-fsq",
   "author": {
     "name": "David Halls",
@@ -60,5 +60,8 @@
     "lsof": "~0.1.0",
     "yargs": "~3.31.0",
     "cp-remote": "~0.1.2"
+  },
+  "engines": {
+    "node": ">=0.12"
   }
 }

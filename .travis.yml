@@ -2,6 +2,7 @@ sudo: false
 language: node_js
 node_js:
   - "4.2"
+  - "0.12"
 addons:
   apt:
     sources:
@@ -24,6 +25,6 @@ before_install:
   - echo . ~/.nvm/nvm.sh > ~/.bashrc.new
   - cat ~/.bashrc >> ~/.bashrc.new
   - mv ~/.bashrc.new ~/.bashrc
-  - nvm alias default 4.2
+  - nvm alias default "$(node --version)"
   - ssh localhost node --version
 script: npm run travis-$TARGET
