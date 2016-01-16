@@ -2,30 +2,48 @@
 <html lang="en">
 <head>
     <title>Code coverage report for All files</title>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="prettify.css">
-    <link rel="stylesheet" href="base.css">
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="prettify.css" />
+    <link rel="stylesheet" href="base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style type='text/css'>
-        div.coverage-summary .sorter {
+        .coverage-summary .sorter {
             background-image: url(sort-arrow-sprite.png);
         }
     </style>
 </head>
 <body>
-<div class="header high">
-    <h1>Code coverage report for <span class="entity">All files</span></h1>
-    <h2>
-        Statements: <span class="metric">93.54% <small>(449 / 480)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
-        Branches: <span class="metric">87.71% <small>(264 / 301)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
-        Functions: <span class="metric">98.88% <small>(88 / 89)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
-        Lines: <span class="metric">97.53% <small>(435 / 446)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
-        Ignored: <span class="metric">1 branch</span> &nbsp;&nbsp;&nbsp;&nbsp;
-    </h2>
-    <div class="path"></div>
-</div>
-<div class="body">
-<div class="coverage-summary">
-<table>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      /
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">93.13% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>447/480</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">86.71% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>261/301</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">98.88% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>88/89</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">97.53% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>435/446</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<div class="pad1">
+<table class="coverage-summary">
 <thead>
 <tr>
    <th data-col="file" data-fmt="html" data-html="true" class="file">File</th>
@@ -42,36 +60,38 @@
 </thead>
 <tbody><tr>
 	<td class="file high" data-value="qlobber-fsq/"><a href="qlobber-fsq/index.html">qlobber-fsq/</a></td>
-	<td data-value="100" class="pic high"><span class="cover-fill cover-full" style="width: 100px;"></span><span class="cover-empty" style="width:0px;"></span></td>
+	<td data-value="100" class="pic high"><div class="chart"><div class="cover-fill cover-full" style="width: 100%;"></div><div class="cover-empty" style="width:0%;"></div></div></td>
 	<td data-value="100" class="pct high">100%</td>
-	<td data-value="17" class="abs high">(17&nbsp;/&nbsp;17)</td>
+	<td data-value="17" class="abs high">17/17</td>
+	<td data-value="50" class="pct medium">50%</td>
+	<td data-value="2" class="abs medium">1/2</td>
 	<td data-value="100" class="pct high">100%</td>
-	<td data-value="2" class="abs high">(2&nbsp;/&nbsp;2)</td>
+	<td data-value="1" class="abs high">1/1</td>
 	<td data-value="100" class="pct high">100%</td>
-	<td data-value="1" class="abs high">(1&nbsp;/&nbsp;1)</td>
-	<td data-value="100" class="pct high">100%</td>
-	<td data-value="17" class="abs high">(17&nbsp;/&nbsp;17)</td>
+	<td data-value="17" class="abs high">17/17</td>
 	</tr>
 
 <tr>
 	<td class="file high" data-value="qlobber-fsq/lib/"><a href="qlobber-fsq/lib/index.html">qlobber-fsq/lib/</a></td>
-	<td data-value="93.3" class="pic high"><span class="cover-fill" style="width: 93px;"></span><span class="cover-empty" style="width:7px;"></span></td>
-	<td data-value="93.3" class="pct high">93.3%</td>
-	<td data-value="463" class="abs high">(432&nbsp;/&nbsp;463)</td>
-	<td data-value="87.63" class="pct high">87.63%</td>
-	<td data-value="299" class="abs high">(262&nbsp;/&nbsp;299)</td>
+	<td data-value="92.87" class="pic high"><div class="chart"><div class="cover-fill" style="width: 92%;"></div><div class="cover-empty" style="width:8%;"></div></div></td>
+	<td data-value="92.87" class="pct high">92.87%</td>
+	<td data-value="463" class="abs high">430/463</td>
+	<td data-value="86.96" class="pct high">86.96%</td>
+	<td data-value="299" class="abs high">260/299</td>
 	<td data-value="98.86" class="pct high">98.86%</td>
-	<td data-value="88" class="abs high">(87&nbsp;/&nbsp;88)</td>
+	<td data-value="88" class="abs high">87/88</td>
 	<td data-value="97.44" class="pct high">97.44%</td>
-	<td data-value="429" class="abs high">(418&nbsp;/&nbsp;429)</td>
+	<td data-value="429" class="abs high">418/429</td>
 	</tr>
 
 </tbody>
 </table>
+</div><div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sat Jan 16 2016 08:14:18 GMT+0000 (GMT)
 </div>
-</div>
-<div class="footer">
-    <div class="meta">Generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Jun 01 2015 22:24:44 GMT+0100 (BST)</div>
 </div>
 <script src="prettify.js"></script>
 <script>
