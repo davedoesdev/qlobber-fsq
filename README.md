@@ -148,7 +148,7 @@ If the filename indicates the message can be read by only one subscriber (i.e. w
 To run the default tests:
 
 ```shell
-grunt test [--fsq-dir <path>]
+grunt test [--fsq-dir=<path>]
 ```
 
 If you don't specify `--fsq-dir` then the default will be used (a directory named `fsq` in the `qlobber-fsq` module directory).
@@ -156,13 +156,13 @@ If you don't specify `--fsq-dir` then the default will be used (a directory name
 To run the stress tests (multiple queues in a single Node process):
 
 ```shell
-grunt test-stress [--fsq-dir <path>]
+grunt test-stress [--fsq-dir=<path>]
 ```
 
 To run the multi-process tests (each process publishing and subscribing to different messages):
 
 ```shell
-grunt test-multi [--fsq-dir <path>] [--queues <number of queues>]
+grunt test-multi [--fsq-dir=<path>] [--queues=<number of queues>]
 ```
 
 If you omit `--queues` then one process will be created per core (detected with [`os.cpus()`](http://nodejs.org/api/os.html#os_os_cpus)).
@@ -170,13 +170,13 @@ If you omit `--queues` then one process will be created per core (detected with 
 To run the distributed tests (one Node process per remote host, each one publishing and subscribing to different messages);
 
 ```shell
-grunt test-multi --fsq-dir <path> --remote <host1> --remote <host2>
+grunt test-multi --fsq-dir=<path> --remote=<host1> --remote=<host2>
 ```
 
 You can specify as many remote hosts as you like. The test uses [`cp-remote`](https://github.com/davedoesdev/cp-remote) to run a module on each remote host. Make sure on each host:
 
 - The `qlobber-fsq` module is installed at the same location.
-- Mount the same distributed file system on the directory you specify for `--fsq-dir`. FraunhoferFS is the only distributed file system currently supported.
+- Mount the same distributed file system on the directory you specify for `--fsq-dir`. FraunhoferFS and CephFS are the only distributed file systems currently supported.
 
 ## Lint
 
@@ -187,7 +187,7 @@ grunt lint
 ## Code Coverage
 
 ```shell
-grunt coverage [--fsq-dir <path>]
+grunt coverage [--fsq-dir=<path>]
 ```
 
 [Instanbul](http://gotwarlost.github.io/istanbul/) results are available [here](http://rawgit.davedoes.com/davedoesdev/qlobber-fsq/master/coverage/lcov-report/index.html).
