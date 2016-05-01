@@ -22,7 +22,7 @@
     "travis-test": "grunt lint test coverage coveralls",
     "travis-test-stress": "grunt test-stress",
     "travis-test-multi": "grunt test-multi",
-    "travis-test-multi-remote": "grunt test-multi --remote localhost"
+    "travis-test-multi-remote": "grunt test-multi --remote=localhost"
   },
   "directories": {
     "test": "test",
