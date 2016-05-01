@@ -24,6 +24,8 @@ var child_process = require('child_process'),
                 {
                     throw "can't specify --queues and --remote";
                 }
+                
+                return true;
             })
             .argv,
     fsq_dir = path.join(argv['fsq-dir'] || path.join(__dirname, '..', 'fsq'), 'fsq'),

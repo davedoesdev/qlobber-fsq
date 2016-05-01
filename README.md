@@ -91,7 +91,7 @@ npm install qlobber-fsq
 
 - `qlobber-fsq` makes no assurances about the security or privacy of messages in transit or at rest. It's up to your application to encrypt messages if required.
 
-- `qlobber-fsq` supports Node 0.12 onwards.
+- `qlobber-fsq` supports Node 0.10 onwards.
 
 ## Distributed filesystems
 
@@ -199,12 +199,12 @@ Coveralls page is [here](https://coveralls.io/r/davedoesdev/qlobber-fsq).
 To run the benchmark:
 
 ```shell
-grunt bench [--fsq-dir <path>] \
-            --rounds <number of rounds> \
-            --size <message size> \
-            --ttl <message time-to-live in seconds> \
-            (--queues <number of queues> | \
-             --remote <host1> --remote <host2> ...)
+grunt bench [--fsq-dir=<path>] \
+            --rounds=<number of rounds> \
+            --size=<message size> \
+            --ttl=<message time-to-live in seconds> \
+            (--queues=<number of queues> | \
+             --remote=<host1> --remote=<host2> ...)
 ```
 
 If you don't specify `--fsq-dir` then the default will be used (a directory named `fsq` in the `qlobber-fsq` module directory).
@@ -279,7 +279,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{String} wildcard_some` The character to use for matching zero or more words in a message topic to a subscriber. Defaults to `#`.
 
-  - `{Function (info, handlers, cb(err, ready, filtered_handlers))} filter` Function called before each message is processed. You can use this to filter the subscribed handler functions to be called for the message (by passing the filtered list as the third argument to `cb`). If you want to ignore the message _at this time_ then pass `false` as the second argument to `cb`. `filter` will be called again later with the same message. Defaults to a function which calls `cb(null, true, handlers)`.
+  - `{Function (info, handlers, cb(err, ready, filtered_handlers))} filter` Function called before each message is processed. You can use this to filter the subscribed handler functions to be called for the message (by passing the filtered list as the third argument to `cb`). If you want to ignore the message _at this time_ then pass `false` as the second argument to `cb`. `filter` will be called again later with the same message. Defaults to a function which calls `cb(null, true, handlers)`. `handlers` and `filtered_handlers` are ES6 Sets unless `options.dedup` is falsey.
 
 <sub>Go: [TOC](#tableofcontents)</sub>
 

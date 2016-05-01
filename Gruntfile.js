@@ -7,16 +7,16 @@ module.exports = function (grunt)
 {
     grunt.initConfig(
     {
-        jslint: {
+        jshint: {
             all: {
                 src: [ 'Gruntfile.js', 'index.js', 'lib/*.js', 'test/**/*.js', 'bench/**/*.js' ],
-                directives: {
-                    white: true
+                options: {
+                    esversion: 6
                 }
             }
         },
 
-        cafemocha: {
+        mochaTest: {
             default: {
                 src: ['test/common.js', 'test/test_spec.js']
             },
@@ -43,42 +43,42 @@ module.exports = function (grunt)
             }
         },
 
-        exec: {
+        shell: {
             cover: {
-                cmd: './node_modules/.bin/istanbul cover ./node_modules/.bin/grunt -- test ' + (fsq_dir_index < 0 ? /* istanbul ignore next */ '' : process.argv.slice(fsq_dir_index).join(' '))
+                command: './node_modules/.bin/istanbul cover ./node_modules/.bin/grunt -- test ' + (fsq_dir_index < 0 ? /* istanbul ignore next */ '' : process.argv.slice(fsq_dir_index).join(' '))
             },
 
             check_cover: {
-                cmd: './node_modules/.bin/istanbul check-coverage --statement 90 --branch 85 --function 95 --line 95'
+                command: './node_modules/.bin/istanbul check-coverage --statement 90 --branch 85 --function 95 --line 95'
             },
 
             coveralls: {
-                cmd: 'cat coverage/lcov.info | coveralls'
+                command: 'cat coverage/lcov.info | coveralls'
             },
 
             bench: {
-                cmd: './node_modules/.bin/bench -c 1 -i "$(echo bench/implementations/*.js | tr " " ,)" --data "' + new Buffer(JSON.stringify(process.argv.slice(3))).toString('hex') + '"'
+                command: './node_modules/.bin/bench -c 1 -i "$(echo bench/implementations/*.js | tr " " ,)" --data "' + new Buffer(JSON.stringify(process.argv.slice(3))).toString('hex') + '"'
 
             },
 
             diagrams: {
-                cmd: 'dot diagrams/how_it_works.dot -Tsvg -odiagrams/how_it_works.svg'
+                command: 'dot diagrams/how_it_works.dot -Tsvg -odiagrams/how_it_works.svg'
             }
         }
     });
     
-    grunt.loadNpmTasks('grunt-jslint');
-    grunt.loadNpmTasks('grunt-cafe-mocha');
+    grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-apidox');
-    grunt.loadNpmTasks('grunt-exec');
+    grunt.loadNpmTasks('grunt-shell');
 
-    grunt.registerTask('lint', 'jslint:all');
-    grunt.registerTask('test', 'cafemocha:default');
-    grunt.registerTask('test-stress', 'cafemocha:stress');
-    grunt.registerTask('test-multi', 'cafemocha:multi');
-    grunt.registerTask('docs', ['exec:diagrams', 'apidox']);
-    grunt.registerTask('coverage', ['exec:cover', 'exec:check_cover']);
-    grunt.registerTask('coveralls', 'exec:coveralls');
-    grunt.registerTask('bench', 'exec:bench');
-    grunt.registerTask('default', ['jslint', 'cafemocha']);
+    grunt.registerTask('lint', 'jshint');
+    grunt.registerTask('test', 'mochaTest:default');
+    grunt.registerTask('test-stress', 'mochaTest:stress');
+    grunt.registerTask('test-multi', 'mochaTest:multi');
+    grunt.registerTask('docs', ['shell:diagrams', 'apidox']);
+    grunt.registerTask('coverage', ['shell:cover', 'shell:check_cover']);
+    grunt.registerTask('coveralls', 'shell:coveralls');
+    grunt.registerTask('bench', 'shell:bench');
+    grunt.registerTask('default', ['jshint', 'mochaTest:default']);
 };

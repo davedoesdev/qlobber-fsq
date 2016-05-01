@@ -634,11 +634,8 @@ describe('qlobber-fsq', function ()
                 filter: function (info, handlers, cb)
                 {
                     expect(info.topic).to.equal('foo');
-
-                    cb(null, true, handlers.filter(function (h)
-                    {
-                        return h !== handler1;
-                    }));
+                    handlers.delete(handler1);
+                    cb(null, true, handlers);
                 }
             });
 
@@ -680,10 +677,8 @@ describe('qlobber-fsq', function ()
 
                         if (filter_called)
                         {
-                            return cb(null, true, handlers.filter(function (h)
-                            {
-                                return h !== handler;
-                            }));
+                            handlers.delete(handler);
+                            return cb(null, true, handlers);
                         }
 
                         filter_called = true;
@@ -750,10 +745,7 @@ describe('qlobber-fsq', function ()
 
                         if (filter_called)
                         {
-                            return cb(null, true, handlers.filter(function (h)
-                            {
-                                return h !== handler;
-                            }));
+                            handlers.delete(handler);
                         }
 
                         filter_called = true;
