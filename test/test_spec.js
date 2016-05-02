@@ -2329,6 +2329,106 @@ describe('qlobber-fsq', function ()
         });
     });
 
+    it('should support disabling work queue (single messages)', function (done)
+    {
+        fsq.stop_watching(function ()
+        {
+            var fsq2 = new QlobberFSQ(
+            {
+                fsq_dir: fsq_dir,
+                flags: flags,
+                single: false
+            }), called = false;
+
+            ignore_ebusy(fsq2);
+
+            fsq2.subscribe('foo', function (data, info, cb)
+            {
+                expect(info.topic).to.equal('foo');
+                expect(data.toString('utf8')).to.equal('bar');
+                // should never be called with 'single' messages
+                expect(info.single).to.equal(false);
+                called = true;
+            });
+
+            fsq2.on('start', function ()
+            {
+                fsq2.publish('foo', 'bar', function (err)
+                {
+                    if (err) { done(err); }
+                });
+
+                fsq2.publish('foo', 'bar', { single: true }, function (err)
+                {
+                    if (err) { done(err); }
+                });
+            });
+
+            setTimeout(function ()
+            {
+                expect(called).to.equal(true);
+                fsq2.stop_watching(done);
+            }, 10000);
+        });
+    });
+
+    it('should disable work queue (single messages) if fs-ext is not available', function (done)
+    {
+        fsq.stop_watching(function ()
+        {
+            var fsq2 = new QlobberFSQ(
+            {
+                fsq_dir: fsq_dir,
+                flags: flags
+            });
+
+            fsq2._require_fs = function (fs)
+            {
+                if (fs !== 'fs')
+                {
+                    throw new Error('dummy');
+                }
+
+                return require(fs);
+            };
+
+            fsq2.on('start', function ()
+            {
+                expect(this._do_single).to.equal(false);
+                fsq2.stop_watching(done);
+            });
+        });
+    });
+
+    it('should emit warning event when fs-ext is not available', function (done)
+    {
+        fsq.stop_watching(function ()
+        {
+            var fsq2 = new QlobberFSQ(
+            {
+                fsq_dir: fsq_dir,
+                flags: flags
+            });
+
+            fsq2._require_fs = function (fs)
+            {
+                if (fs !== 'fs')
+                {
+                    throw 'dummy';
+                }
+
+                return require(fs);
+            };
+
+            fsq2.on('warning', function (err)
+            {
+                expect(this._do_single).to.equal(false);
+                expect(err).to.equal('dummy');
+                fsq2.stop_watching(done);
+            });
+        });
+    });
+
     // TODO:
     // - Test on CephFS when Firefly and Ubuntu 14.04 are released.
 });

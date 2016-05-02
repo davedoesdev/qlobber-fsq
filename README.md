@@ -273,6 +273,8 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{Boolean} dedup` Whether to ensure each handler function is called at most once when a message is received. Defaults to `true`.
 
+  - `{Boolean} single` Whether to process messages meant for _at most_ one subscriber (across all `QlobberFSQ` objects), i.e. work queues. This relies on the optional dependency [`fs-ext`](https://github.com/baudehlo/node-fs-ext). Defaults to `true` if `fs-ext` is installed, otherwise `false` (in which case a `warning` event will be emitted).
+
   - `{String} separator` The character to use for separating words in message topics. Defaults to `.`.
 
   - `{String} wildcard_one` The character to use for matching exactly one word in a message topic to a subscriber. Defaults to `*`.
