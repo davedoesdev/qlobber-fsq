@@ -2420,7 +2420,7 @@ describe('qlobber-fsq', function ()
                 return require(fs);
             };
 
-            fsq2.on('warning', function (err)
+            fsq2.on('single_disabled', function (err)
             {
                 expect(this._do_single).to.equal(false);
                 expect(err).to.equal('dummy');

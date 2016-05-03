@@ -237,6 +237,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 - <a name="toc_qlobberfsqeventsstop"></a>[QlobberFSQ.events.stop](#qlobberfsqeventsstop)
 - <a name="toc_qlobberfsqeventserrorerr"></a>[QlobberFSQ.events.error](#qlobberfsqeventserrorerr)
 - <a name="toc_qlobberfsqeventswarningerr"></a>[QlobberFSQ.events.warning](#qlobberfsqeventswarningerr)
+- <a name="toc_qlobberfsqeventssingle_disablederr"></a>[QlobberFSQ.events.single_disabled](#qlobberfsqeventssingle_disablederr)
 
 ## QlobberFSQ([options])
 
@@ -273,7 +274,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{Boolean} dedup` Whether to ensure each handler function is called at most once when a message is received. Defaults to `true`.
 
-  - `{Boolean} single` Whether to process messages meant for _at most_ one subscriber (across all `QlobberFSQ` objects), i.e. work queues. This relies on the optional dependency [`fs-ext`](https://github.com/baudehlo/node-fs-ext). Defaults to `true` if `fs-ext` is installed, otherwise `false` (in which case a `warning` event will be emitted).
+  - `{Boolean} single` Whether to process messages meant for _at most_ one subscriber (across all `QlobberFSQ` objects), i.e. work queues. This relies on the optional dependency [`fs-ext`](https://github.com/baudehlo/node-fs-ext). Defaults to `true` if `fs-ext` is installed, otherwise `false` (in which case a [`single_disabled`](#qlobberfsqeventssingle_disablederr) event will be emitted).
 
   - `{String} separator` The character to use for separating words in message topics. Defaults to `.`.
 
@@ -428,6 +429,18 @@ A `start` event won't be fired after a [`stop`](#qlobberfsqeventsstop) event.
 **Parameters:**
 
 - `{Object} err` The error that occurred.
+
+<sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.events](#toc_qlobberfsqevents)</sub>
+
+## QlobberFSQ.events.single_disabled(err)
+
+> `single_disabled` event
+
+`QlobberFSQ` objects fire a `single_disabled` event if they can't support work queue semantics.
+
+**Parameters:**
+
+- `{Object} err` The error that caused single-subscriber messages not to be supported.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.events](#toc_qlobberfsqevents)</sub>
 
