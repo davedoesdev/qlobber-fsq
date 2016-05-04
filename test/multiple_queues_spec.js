@@ -184,12 +184,15 @@ describe('multiple queues', function ()
     function publish_to_queues2(num_queues, num_messages, max_message_size)
     {
         publish_to_queues('multi', num_queues, num_messages, max_message_size, false);
-        publish_to_queues('single', num_queues, num_messages, max_message_size, true);
-        publish_to_queues('mixed', num_queues, num_messages,  max_message_size,
-        function ()
+        if (single_supported)
         {
-            return Math.random() < 0.5;
-        });
+            publish_to_queues('single', num_queues, num_messages, max_message_size, true);
+            publish_to_queues('mixed', num_queues, num_messages,  max_message_size,
+            function ()
+            {
+                return Math.random() < 0.5;
+            });
+        }
     }
 
     function publish_to_queues3(num_queues, max_message_size)

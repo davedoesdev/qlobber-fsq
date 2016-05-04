@@ -17,8 +17,17 @@
 /*jslint node: true, nomen: true, bitwise: true */
 "use strict";
 
+try
+{
+    global.fs = require('fs-ext');
+    globsl.single_supported = true;
+}
+catch (ex)
+{
+    global.fs = require('fs');
+    global.single_supported = false;
+}
 global.path = require('path');
-global.fs = require('fs-ext');
 global.crypto = require('crypto');
 global.os = require('os');
 global.events = require('events');
@@ -49,15 +58,20 @@ if (argv.sync)
     global.flags |= constants.O_SYNC;
 }
 
-global.ignore_ebusy = function (fsq)
+global.ignore_ebusy = function (fsq, extra)
 {
     fsq.on('warning', function (err)
     {
-        if (!(err && err.code === 'EBUSY'))
+        if (!(err && (err.code === 'EBUSY' || (extra && err.code === extra))))
         {
             console.error(err);
         }
     });
+
+    if (!single_supported)
+    {
+        fsq.on('single_disabled', function () { });
+    }
 };
 
 beforeEach(function (done)
