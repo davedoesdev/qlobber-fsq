@@ -10,7 +10,8 @@
           sum: false,
           crypto: false,
           beforeEach: false,
-          afterEach: false */
+          afterEach: false,
+          single_supported: false */
 /*jslint node: true */
 "use strict";
 

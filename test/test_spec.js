@@ -17,7 +17,9 @@
          afterEach: false,
          ignore_ebusy: false,
          retry_interval: false,
-         util: false */
+         util: false,
+         single_supported: false,
+         os: false */
 /*jslint node: true, nomen: true, bitwise: true, todo: true */
 "use strict";
 

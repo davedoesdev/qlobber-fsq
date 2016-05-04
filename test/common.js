@@ -13,14 +13,15 @@
           expect: false,
           flags: false,
           retry_interval: false,
-          ignore_ebusy: false */
+          ignore_ebusy: false,
+          single_supported: false */
 /*jslint node: true, nomen: true, bitwise: true */
 "use strict";
 
 try
 {
     global.fs = require('fs-ext');
-    globsl.single_supported = true;
+    global.single_supported = true;
 }
 catch (ex)
 {
