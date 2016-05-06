@@ -291,7 +291,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 <a name="qlobberfsqprototype"></a>
 
-## QlobberFSQ.prototype.subscribe(topic, handler, cb)
+## QlobberFSQ.prototype.subscribe(topic, handler, [cb])
 
 > Subscribe to messages in the file system queue.
 
@@ -316,12 +316,12 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
     - `{Function} [finish]` Optional function to call once the message has been deleted and unlocked, in the case of `info.single === true`, or straight away otherwise. It will be passed the following argument:
       - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
-- `{Function} cb` Function to call once the subscription has been registered. This will be passed the following argument: 
+- `{Function} [cb]` Optional function to call once the subscription has been registered. This will be passed the following argument: 
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
 
-## QlobberFSQ.prototype.unsubscribe([topic], [handler], cb)
+## QlobberFSQ.prototype.unsubscribe([topic], [handler], [cb])
 
 > Unsubscribe from messages in the file system queue.
 
@@ -329,7 +329,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 - `{String} [topic]` Which messages you're no longer interested in receiving via the `handler` function. This should be a topic you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-cb). If topic is `undefined` then all handlers for all topics are unsubscribed. 
 - `{Function} [handler]` The function you no longer want to be called with messages published to the topic `topic`. This should be a function you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-cb). If you subscribed `handler` to a different topic then it will still be called for messages which match that topic. If `handler` is undefined, all handlers for the topic `topic` are unsubscribed. 
-- `{Function} cb` Function to call once `handler` has been unsubscribed from `topic`. This will be passed the following argument: 
+- `{Function} [cb]` Optional function to call once `handler` has been unsubscribed from `topic`. This will be passed the following argument: 
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
