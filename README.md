@@ -285,7 +285,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{String} wildcard_some` The character to use for matching zero or more words in a message topic to a subscriber. Defaults to `#`.
 
-  - `{Function (info, handlers, cb(err, ready, filtered_handlers))} filter` Function called before each message is processed. You can use this to filter the subscribed handler functions to be called for the message (by passing the filtered list as the third argument to `cb`). If you want to ignore the message _at this time_ then pass `false` as the second argument to `cb`. `filter` will be called again later with the same message. Defaults to a function which calls `cb(null, true, handlers)`. `handlers` and `filtered_handlers` are ES6 Sets unless `options.dedup` is falsey.
+  - `{Function (info, handlers, cb(err, ready, filtered_handlers))} filter` Function called before each message is processed. You can use this to filter the subscribed handler functions to be called for the message (by passing the filtered list as the third argument to `cb`). If you want to ignore the message _at this time_ then pass `false` as the second argument to `cb`. `filter` will be called again later with the same message. Defaults to a function which calls `cb(null, true, handlers)`. `handlers` and `filtered_handlers` are ES6 Sets, or arrays if `options.dedup` is falsey.
 
 <sub>Go: [TOC](#tableofcontents)</sub>
 
