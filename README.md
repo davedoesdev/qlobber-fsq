@@ -251,7 +251,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 - `{Object} [options]` Configures the file system queue. Valid properties are listed below: 
   - `{String} fsq_dir` The path to the file system queue directory. Note that the following sub-directories will be created under this directory if they don't exist: `messages`, `staging`, `topics` and `update`. Defaults to a directory named `fsq` in the `qlobber-fsq` module directory.
 
-  - `{Boolean} encode_topics` Whether to hex-encode message topics. By default, unencoded topic strings are used as part of message filenames. If you can't ensure that topics contain only valid filename characters, set this to `true`. The hex-encoded topic will then be used in the filename and decoded before matching the topic against subscribers.
+  - `{Boolean} encode_topics` Whether to hex-encode message topics. Because topic strings form part of message filenames, they're first hex-encoded. If you can ensure that your message topics contain only valid filename characters, set this to `false` to skip encoding.
   
   - `{Integer} split_topic_at` Maximum number of characters in a short topic. Short topics are contained entirely in a message's filename. Long topics are split so the first `split_topic_at` characters go in the filename and the rest are written to a separate file in the `topics` sub-directory. Obviously long topics are less efficient. Defaults to 200, which is the maximum for most common file systems. Note: if your `fsq_dir` is on an [`ecryptfs`](http://ecryptfs.org/) file system then you should set `split_topic_at` to 100.
 
@@ -342,7 +342,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 **Parameters:**
 
-- `{String} topic` Message topic. The topic should be a series of words separated by `.` (or the `separator` character you provided to the [`QlobberFSQ constructor`](#qlobberfsqoptions)). Since the unencoded topic string is used as part of the message's filename, topic words can contain any valid file name character for your file system. However, it's probably sensible to limit it to alphanumeric characters, `-`, `_` and `.`. If you can't do this then set `encode_topics` to `true` in the [`QlobberFSQ constructor`](#qlobberfsqoptions). 
+- `{String} topic` Message topic. The topic should be a series of words separated by `.` (or the `separator` character you provided to the [`QlobberFSQ constructor`](#qlobberfsqoptions)). Topic words can contain any character, unless you set `encode_topics` to `false` in the [`QlobberFSQ constructor`](#qlobberfsqoptions). In that case they can contain any valid filename character for your file system, although it's probably sensible to limit it to alphanumeric characters, `-`, `_` and `.`. 
 - `{String | Buffer} [payload]` Message payload. If you don't pass a payload then `publish` will return a [Writable stream](http://nodejs.org/api/stream.html#stream_class_stream_writable) for you to write the payload into. 
 - `{Object} [options]` Optional settings for this publication: 
   - `{Boolean} single` If `true` then the message will be given to _at most_ one interested subscriber, across all `QlobberFSQ` objects scanning the file system queue. Otherwise all interested subscribers will receive the message.

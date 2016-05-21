@@ -114,7 +114,7 @@ describe('qlobber-fsq', function ()
             expect(info.topic).to.equal('foo');
             expect(info.single).to.equal(false);
             expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-            expect(info.fname.lastIndexOf('foo@', 0)).to.equal(0);
+            expect(info.fname.lastIndexOf(new Buffer('foo').toString('hex') + '@', 0)).to.equal(0);
             expect(info.topic_path).to.equal(undefined);
             expect(data.toString('utf8')).to.equal('bar');
             done();
@@ -469,7 +469,7 @@ describe('qlobber-fsq', function ()
                 expect(info.topic).to.equal('foo');
                 expect(info.single).to.equal(true);
                 expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-                expect(info.fname.lastIndexOf('foo@', 0)).to.equal(0);
+                expect(info.fname.lastIndexOf(new Buffer('foo').toString('hex') + '@', 0)).to.equal(0);
                 expect(data.toString('utf8')).to.equal('bar');
 
                 fs.stat(info.path, function (err)
@@ -1350,8 +1350,7 @@ describe('qlobber-fsq', function ()
             expect(info.topic).to.equal(topic);
             expect(info.single).to.equal(false);
             expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-            arr.length = fsq._split_topic_at + 1;
-            expect(info.fname.lastIndexOf(arr.join('a') + '@', 0)).to.equal(0);
+            expect(info.fname.lastIndexOf(new Buffer(topic).toString('hex').substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
             expect(data.toString('utf8')).to.equal('bar');
 
             var topic_dir = path.dirname(path.dirname(info.topic_path));
@@ -1362,8 +1361,7 @@ describe('qlobber-fsq', function ()
             {
                 if (err) { return done(err); }
 
-                arr.length = topic.length - fsq._split_topic_at + 1;
-                expect(split.toString('utf8')).to.equal(arr.join('a'));
+                expect(split.toString('utf8')).to.equal(new Buffer(topic).toString('hex').substr(fsq._split_topic_at));
 
                 setTimeout(function ()
                 {
@@ -1399,8 +1397,7 @@ describe('qlobber-fsq', function ()
                 expect(info.topic).to.equal(topic);
                 expect(info.single).to.equal(true);
                 expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-                arr.length = fsq._split_topic_at + 1;
-                expect(info.fname.lastIndexOf(arr.join('a') + '@', 0)).to.equal(0);
+                expect(info.fname.lastIndexOf(new Buffer(topic).toString('hex').substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
                 expect(data.toString('utf8')).to.equal('bar');
 
                 var topic_dir = path.dirname(path.dirname(info.topic_path));
@@ -1411,8 +1408,7 @@ describe('qlobber-fsq', function ()
                 {
                     if (err) { return done(err); }
 
-                    arr.length = topic.length - fsq._split_topic_at + 1;
-                    expect(split.toString('utf8')).to.equal(arr.join('a'));
+                    expect(split.toString('utf8')).to.equal(new Buffer(topic).toString('hex').substr(fsq._split_topic_at));
 
                     setTimeout(function ()
                     {
@@ -1460,7 +1456,7 @@ describe('qlobber-fsq', function ()
                     expect(info.topic).to.equal(topic);
                     expect(info.single).to.equal(false);
                     expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-                    expect(info.fname.lastIndexOf('hello@', 0)).to.equal(0);
+                    expect(info.fname.lastIndexOf(new Buffer(topic).toString('hex').substr(0, 5) + '@', 0)).to.equal(0);
                     expect(data.toString('utf8')).to.equal('bar');
 
                     var topic_dir = path.dirname(path.dirname(info.topic_path));
@@ -1470,7 +1466,7 @@ describe('qlobber-fsq', function ()
                     fs.readFile(info.topic_path, function (err, split)
                     {
                         if (err) { return done(err); }
-                        expect(split.toString('utf8')).to.equal('fromfsq');
+                        expect(split.toString('utf8')).to.equal(new Buffer(topic).toString('hex').substr(5));
 
                         setTimeout(function ()
                         {
@@ -2480,20 +2476,56 @@ describe('qlobber-fsq', function ()
         });
     });
 
-    it('should error when publishing to a topic with an invalid file name character',  function (done)
+    it('should publish to a topic with an invalid file name character', function (done)
     {
+        var arr = [], ltopic, rsingle = false, rmulti = false;
+        arr.length = 64 * 1024 + 1;
+        ltopic = arr.join('\0');
+
+        fsq.subscribe('*', function (data, info)
+        {
+            if (info.single)
+            {
+                expect(rsingle).to.equal(false);
+                rsingle = true;
+                expect(info.topic).to.equal(ltopic);
+                expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
+                expect(info.fname.lastIndexOf(new Buffer(ltopic).toString('hex').substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
+                expect(data.toString('utf8')).to.equal('test');
+
+                var topic_dir = path.dirname(path.dirname(info.topic_path));
+                expect(topic_dir).to.equal(path.join(msg_dir, '..', 'topics'));
+                expect(fs.readFileSync(info.topic_path).toString('utf8')).to.equal(new Buffer(ltopic).toString('hex').substr(fsq._split_topic_at));
+            }
+            else
+            {
+                expect(rmulti).to.equal(false);
+                rmulti = true;
+                expect(info.topic).to.equal('\0foo');
+                expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
+                expect(info.fname.lastIndexOf(new Buffer('\0foo').toString('hex') + '@', 0)).to.equal(0);
+                expect(info.topic_path).to.equal(undefined);
+                expect(data.toString('utf8')).to.equal('bar');
+            }
+
+            if (rsingle && rmulti)
+            {
+                this.stop_watching(done);
+            }
+        });
+
         fsq.publish('\0foo', 'bar', function (err)
         {
-            if (!err) { return done(new Error('expected an error')); }
-            if (err.code) // 0.12 doesn't set code
-            {
-                expect(err.code).to.equal('ENOENT');
-            }
-            done();
+            if (err) { done(err); }
+        });
+
+        fsq.publish(ltopic, 'test', { single: true }, function (err)
+        {
+            if (err) { done(err); }
         });
     });
 
-    it('should not error when topic encoding is enabled and publishing to a topic with an invalid file name character', function (done)
+    it('should error when publishing to a topic with an invalid file name character and topic encoding is disabled',  function (done)
     {
         fsq.stop_watching(function ()
         {
@@ -2501,7 +2533,35 @@ describe('qlobber-fsq', function ()
             {
                 fsq_dir: fsq_dir,
                 flags: flags,
-                encode_topics: true
+                encode_topics: false
+            });
+
+            ignore_ebusy(fsq2);
+
+            fsq2.on('start', function ()
+            {
+                this.publish('\0foo', 'bar', function (err)
+                {
+                    if (!err) { return done(new Error('expected an error')); }
+                    if (err.code) // 0.12 doesn't set code
+                    {
+                        expect(err.code).to.equal('ENOENT');
+                    }
+                    this.stop_watching(done);
+                });
+            });
+        });
+    });
+
+    it('should not error when publishing to a topic without an invalid file name character and topic encoding is disabled', function (done)
+    {
+        fsq.stop_watching(function ()
+        {
+            var fsq2 = new QlobberFSQ(
+            {
+                fsq_dir: fsq_dir,
+                flags: flags,
+                encode_topics: false
             });
 
             ignore_ebusy(fsq2);
@@ -2510,7 +2570,7 @@ describe('qlobber-fsq', function ()
             {
                 var arr = [], ltopic, rsingle = false, rmulti = false;
                 arr.length = 64 * 1024 + 1;
-                ltopic = arr.join('\0');
+                ltopic = arr.join('a');
 
                 this.subscribe('*', function (data, info)
                 {
@@ -2520,20 +2580,20 @@ describe('qlobber-fsq', function ()
                         rsingle = true;
                         expect(info.topic).to.equal(ltopic);
                         expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-                        expect(info.fname.lastIndexOf(new Buffer(ltopic).toString('hex').substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
+                        expect(info.fname.lastIndexOf(ltopic.substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
                         expect(data.toString('utf8')).to.equal('test');
 
                         var topic_dir = path.dirname(path.dirname(info.topic_path));
                         expect(topic_dir).to.equal(path.join(msg_dir, '..', 'topics'));
-                        expect(fs.readFileSync(info.topic_path).toString('utf8')).to.equal(new Buffer(ltopic).toString('hex').substr(fsq._split_topic_at));
+                        expect(fs.readFileSync(info.topic_path).toString('utf8')).to.equal(ltopic.substr(fsq._split_topic_at));
                     }
                     else
                     {
                         expect(rmulti).to.equal(false);
                         rmulti = true;
-                        expect(info.topic).to.equal('\0foo');
+                        expect(info.topic).to.equal('foo');
                         expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-                        expect(info.fname.lastIndexOf(new Buffer('\0foo').toString('hex') + '@', 0)).to.equal(0);
+                        expect(info.fname.lastIndexOf('foo' + '@', 0)).to.equal(0);
                         expect(info.topic_path).to.equal(undefined);
                         expect(data.toString('utf8')).to.equal('bar');
                     }
@@ -2544,7 +2604,7 @@ describe('qlobber-fsq', function ()
                     }
                 });
 
-                this.publish('\0foo', 'bar', function (err)
+                this.publish('foo', 'bar', function (err)
                 {
                     if (err) { done(err); }
                 });
