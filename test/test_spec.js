@@ -2480,6 +2480,79 @@ describe('qlobber-fsq', function ()
         });
     });
 
+    it('should error when publishing to a topic with an invalid file name character',  function (done)
+    {
+        fsq.publish('\0foo', 'bar', function (err)
+        {
+            expect(err.code).to.equal('ENOENT');
+            done();
+        });
+    });
+
+    it('should not error when topic encoding is enabled and publishing to a topic with an invalid file name character', function (done)
+    {
+        fsq.stop_watching(function ()
+        {
+            var fsq2 = new QlobberFSQ(
+            {
+                fsq_dir: fsq_dir,
+                flags: flags,
+                encode_topics: true
+            });
+
+            ignore_ebusy(fsq2);
+
+            fsq2.on('start', function ()
+            {
+                var arr = [], ltopic, rsingle = false, rmulti = false;
+                arr.length = 64 * 1024 + 1;
+                ltopic = arr.join('\0');
+
+                this.subscribe('*', function (data, info)
+                {
+                    if (info.single)
+                    {
+                        expect(rsingle).to.be.false;
+                        rsingle = true;
+                        expect(info.topic).to.equal(ltopic);
+                        expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
+                        expect(info.fname.lastIndexOf(new Buffer(ltopic).toString('hex').substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
+                        expect(data.toString('utf8')).to.equal('test');
+
+                        var topic_dir = path.dirname(path.dirname(info.topic_path));
+                        expect(topic_dir).to.equal(path.join(msg_dir, '..', 'topics'));
+                        expect(fs.readFileSync(info.topic_path).toString('utf8')).to.equal(new Buffer(ltopic).toString('hex').substr(fsq._split_topic_at));
+                    }
+                    else
+                    {
+                        expect(rmulti).to.be.false;
+                        rmulti = true;
+                        expect(info.topic).to.equal('\0foo');
+                        expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
+                        expect(info.fname.lastIndexOf(new Buffer('\0foo').toString('hex') + '@', 0)).to.equal(0);
+                        expect(info.topic_path).to.equal(undefined);
+                        expect(data.toString('utf8')).to.equal('bar');
+                    }
+
+                    if (rsingle && rmulti)
+                    {
+                        this.stop_watching(done);
+                    }
+                });
+
+                this.publish('\0foo', 'bar', function (err)
+                {
+                    if (err) { done(err); }
+                });
+
+                this.publish(ltopic, 'test', { single: true }, function (err)
+                {
+                    if (err) { done(err); }
+                });
+            });
+        });
+    });
+
     // TODO:
     // - Test on CephFS when Firefly and Ubuntu 14.04 are released.
 });
