@@ -63,7 +63,7 @@ describe('multiple queues', function ()
                             expect(info.single).to.equal(get_single);
                         }
                         expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-                        expect(info.fname.lastIndexOf('foo@', 0)).to.equal(0);
+                        expect(info.fname.lastIndexOf(new Buffer('foo').toString('hex') + '@', 0)).to.equal(0);
 
                         checksum += sum(data);
 
