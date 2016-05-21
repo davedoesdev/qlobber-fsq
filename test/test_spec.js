@@ -2512,7 +2512,7 @@ describe('qlobber-fsq', function ()
                 {
                     if (info.single)
                     {
-                        expect(rsingle).to.be.false;
+                        expect(rsingle).to.equal(false);
                         rsingle = true;
                         expect(info.topic).to.equal(ltopic);
                         expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
@@ -2525,7 +2525,7 @@ describe('qlobber-fsq', function ()
                     }
                     else
                     {
-                        expect(rmulti).to.be.false;
+                        expect(rmulti).to.equal(false);
                         rmulti = true;
                         expect(info.topic).to.equal('\0foo');
                         expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
