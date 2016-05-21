@@ -2484,7 +2484,11 @@ describe('qlobber-fsq', function ()
     {
         fsq.publish('\0foo', 'bar', function (err)
         {
-            expect(err.code).to.equal('ENOENT');
+            if (!err) { return done(new Error('expected an error')); }
+            if (err.code) // 0.12 doesn't set code
+            {
+                expect(err.code).to.equal('ENOENT');
+            }
             done();
         });
     });
