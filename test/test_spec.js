@@ -2478,7 +2478,7 @@ describe('qlobber-fsq', function ()
 
     it('should publish to a topic with an invalid file name character', function (done)
     {
-        var arr = [], ltopic, rsingle = false, rmulti = false;
+        var arr = [], ltopic, rsingle = !single_supported, rmulti = false;
         arr.length = 64 * 1024 + 1;
         ltopic = arr.join('\0');
 
@@ -2568,7 +2568,7 @@ describe('qlobber-fsq', function ()
 
             fsq2.on('start', function ()
             {
-                var arr = [], ltopic, rsingle = false, rmulti = false;
+                var arr = [], ltopic, rsingle = !single_supported, rmulti = false;
                 arr.length = 64 * 1024 + 1;
                 ltopic = arr.join('a');
 
