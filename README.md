@@ -277,6 +277,8 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{Integer} bucket_concurrency` The number of buckets to process at once. Defaults to 1.
 
+  - `{Integer} handler_concurrency` By default, a message is considered handled by a subscriber only when all its data has been read. If you set `handler_concurrency` to non-zero, a message is considered handled as soon as a subscriber receives it. The next message will then be processed straight away. The value of `handler-concurrency` limits the number of messages being handled by subscribers at any one time. Defaults to 0 (waits for all message data to be read).
+
   - `{Boolean} dedup` Whether to ensure each handler function is called at most once when a message is received. Defaults to `true`.
 
   - `{Boolean} single` Whether to process messages meant for _at most_ one subscriber (across all `QlobberFSQ` objects), i.e. work queues. This relies on the optional dependency [`fs-ext`](https://github.com/baudehlo/node-fs-ext). Defaults to `true` if `fs-ext` is installed, otherwise `false` (in which case a [`single_disabled`](#qlobberfsqeventssingle_disablederr) event will be emitted).

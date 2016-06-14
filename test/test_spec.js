@@ -23,6 +23,26 @@
 /*jslint node: true, nomen: true, bitwise: true, todo: true */
 "use strict";
 
+function read_all(s, cb)
+{
+    var bufs = [];
+
+    s.on('end', function ()
+    {
+        cb(Buffer.concat(bufs));
+    });
+
+    s.on('readable', function ()
+    {
+        while (true)
+        {
+            var data = this.read();
+            if (data === null) { break; }
+            bufs.push(data);
+        }
+    });
+}
+
 describe('qlobber-fsq', function ()
 {
     this.timeout(60 * 1000);
@@ -2617,7 +2637,61 @@ describe('qlobber-fsq', function ()
         });
     });
 
-    // TODO:
-    // - Test on CephFS when Firefly and Ubuntu 14.04 are released.
-});
+    it('should support handler concurrency', function (done)
+    {
+        fsq.stop_watching(function ()
+        {
+            var fsq2 = new QlobberFSQ(
+            {
+                fsq_dir: fsq_dir,
+                flags: flags,
+                handler_concurrency: 2
+            });
 
+            ignore_ebusy(fsq2);
+
+            fsq2.on('start', function ()
+            {
+                var streams = [];
+
+                function handler(s, info)
+                {
+                    streams.push(s);
+
+                    if (streams.length === 1)
+                    {
+                        fsq2.publish('foo', 'bar2', function (err)
+                        {
+                            if (err) { done(err); }
+                        });
+                    }
+                    else if (streams.length === 2)
+                    {
+                        read_all(streams[0], function (v)
+                        {
+							expect(v.toString()).to.equal('bar');
+                            read_all(streams[1], function (v)
+                            {
+								expect(v.toString()).to.equal('bar2');
+                                done();
+                            });
+                        });
+                    }
+                    else
+                    {
+                        done(new Error('called too many times'));
+                    }
+                }
+
+                handler.accept_stream = true;
+
+                this.subscribe('foo', handler);
+
+                this.publish('foo', 'bar', function (err)
+                {
+                    if (err) { done(err); }
+                });
+            });
+        });
+    });
+});
