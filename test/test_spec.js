@@ -2660,7 +2660,7 @@ describe('qlobber-fsq', function ()
 
                     if (streams.length === 1)
                     {
-                        fsq2.publish('foo', 'bar2', function (err)
+                        this.publish('foo', 'bar2', function (err)
                         {
                             if (err) { done(err); }
                         });
@@ -2673,7 +2673,7 @@ describe('qlobber-fsq', function ()
                             read_all(streams[1], function (v)
                             {
 								expect(v.toString()).to.equal('bar2');
-                                done();
+                                fsq2.stop_watching(done);
                             });
                         });
                     }
