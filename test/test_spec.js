@@ -2660,7 +2660,7 @@ describe('qlobber-fsq', function ()
 
                     if (streams.length === 1)
                     {
-                        this.publish('foo', 'bar2', function (err)
+                        fsq2.publish('foo', 'bar2', function (err)
                         {
                             if (err) { done(err); }
                         });
