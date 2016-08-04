@@ -86,7 +86,7 @@ npm install qlobber-fsq
 
 ## Limitations
 
-- `qlobber-fsq` provides no guarantee that the order messages are given to subscribers is the same as the order in which the messages were written. If you want to maintain message order between readers and writers then you'll need to do it in your application (using ACKs, sliding windows etc).
+- `qlobber-fsq` provides no guarantee that the order messages are given to subscribers is the same as the order in which the messages were written. If you want to maintain message order between readers and writers then you'll need to do it in your application (using ACKs, sliding windows etc). Alternatively, use the `order_by_expiry` [constructor](#qlobberfsqoptions) option to have messages delivered in order of the time they expire.
 
 - `qlobber-fsq` does its best not to lose messages but in exceptional circumstances (e.g. process crash, file system corruption) messages may get dropped. You should design your application to be resilient against dropped messages.
 
@@ -278,6 +278,8 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
   - `{Integer} bucket_concurrency` The number of buckets to process at once. Defaults to 1.
 
   - `{Integer} handler_concurrency` By default, a message is considered handled by a subscriber only when all its data has been read. If you set `handler_concurrency` to non-zero, a message is considered handled as soon as a subscriber receives it. The next message will then be processed straight away. The value of `handler-concurrency` limits the number of messages being handled by subscribers at any one time. Defaults to 0 (waits for all message data to be read).
+
+  - `{Boolean} order_by_expiry` Pass messages to subscribers in order of their expiry time. If `true` then `bucket_base` and `bucket_num_chars` are forced to 1 so messages are written to a single bucket. Defaults to `false`.
 
   - `{Boolean} dedup` Whether to ensure each handler function is called at most once when a message is received. Defaults to `true`.
 
