@@ -2774,4 +2774,49 @@ describe('qlobber-fsq', function ()
             });
         });
     });
+
+    it('should support error on stream and calling back', function (done)
+    {
+        fsq.on('warning', function (err)
+        {
+            if (err.code !== 'EBUSY')
+            {
+                expect(err.message).to.equal('dummy');
+            }
+        });
+
+        var handler = function (stream, info, cb)
+        {
+            stream.emit('error', new Error('dummy'));
+            cb(new Error('dummy'), done);
+        };
+        handler.accept_stream = true;
+
+        fsq.subscribe('foo', handler);
+        fsq.publish('foo', { single: true }).end('bar');
+    });
+
+    it('should support calling back before stream has ended', function (done)
+    {
+        var count = 0;
+
+        function handler(stream, info, cb)
+        {
+            count += 1;
+
+            if (count === 2)
+            {
+                cb(null, done);
+            }
+            else
+            {
+                cb();
+            }
+        }
+        handler.accept_stream = true;
+
+        fsq.subscribe('foo', handler);
+        fsq.publish('foo').end('bar');
+        fsq.publish('foo', { single: true }).end('bar');
+    });
 });
