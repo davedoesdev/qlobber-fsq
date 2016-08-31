@@ -2821,7 +2821,7 @@ describe('qlobber-fsq', function ()
         fsq.publish('foo', { single: true }).end('bar');
     });
 
-    it('should end or error stream after called back before stream has ended',
+    it('should end/error stream after called back before stream has ended',
     function (done)
     {
         var count = 0;
@@ -2837,11 +2837,14 @@ describe('qlobber-fsq', function ()
             }
             else
             {
+                stream.on('end', function ()
+                {
+                    fsq.publish('foo', { single: true }).end('bar');
+                });
+
                 stream.on('error', function (err)
                 {
                     expect(err.message).to.equal('dummy');
-                    //console.log(this.read());
-                    fsq.publish('foo', { single: true }).end('bar');
                 });
 
                 cb(new Error('dummy'));
