@@ -2364,6 +2364,7 @@ describe('qlobber-fsq', function ()
         /*jslint unparam: true */
         fsq.subscribe('foo', function (data, info, cb)
         {
+            expect(info.single).to.equal(true); // we throw multi away on error
             cb(null, done);
         });
         /*jslint unparam: false */
@@ -2818,5 +2819,37 @@ describe('qlobber-fsq', function ()
         fsq.subscribe('foo', handler);
         fsq.publish('foo').end('bar');
         fsq.publish('foo', { single: true }).end('bar');
+    });
+
+    it('should end or error stream after called back before stream has ended',
+    function (done)
+    {
+        var count = 0;
+
+        function handler(stream, info, cb)
+        {
+            count += 1;
+
+            if (count === 2)
+            {
+                stream.on('end', done);
+                cb();
+            }
+            else
+            {
+                stream.on('error', function (err)
+                {
+                    expect(err.message).to.equal('dummy');
+                    //console.log(this.read());
+                    fsq.publish('foo', { single: true }).end('bar');
+                });
+
+                cb(new Error('dummy'));
+            }
+        }
+        handler.accept_stream = true;
+
+        fsq.subscribe('foo', handler);
+        fsq.publish('foo').end('bar');
     });
 });
