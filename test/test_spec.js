@@ -2835,6 +2835,11 @@ describe('qlobber-fsq', function ()
 
         function handler(stream, info, cb)
         {
+            stream.on('readable', function ()
+            {
+                expect(this.read()).to.equal(null);
+            });
+
             count += 1;
 
             if (count === 2)
