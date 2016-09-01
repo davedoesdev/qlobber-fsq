@@ -2778,18 +2778,25 @@ describe('qlobber-fsq', function ()
 
     it('should support error on stream and calling back', function (done)
     {
+        var msg;
+
         fsq.on('warning', function (err)
         {
             if (err.code !== 'EBUSY')
             {
-                expect(err.message).to.equal('dummy');
+                msg = err.message;
             }
         });
 
         var handler = function (stream, info, cb)
         {
             stream.emit('error', new Error('dummy'));
-            cb(new Error('dummy'), done);
+            cb(new Error('dummy'), function (err)
+            {
+                expect(err).to.equal(null);
+                expect(msg).to.equal('dummy');
+                done();
+            });
         };
         handler.accept_stream = true;
 
@@ -2837,17 +2844,25 @@ describe('qlobber-fsq', function ()
             }
             else
             {
+                var ended = false, msg;
+
                 stream.on('end', function ()
                 {
-                    fsq.publish('foo', { single: true }).end('bar');
+                    ended = true;
                 });
 
                 stream.on('error', function (err)
                 {
-                    expect(err.message).to.equal('dummy');
+                    msg = err.message;
                 });
 
-                cb(new Error('dummy'));
+                cb(new Error('dummy'), function (err)
+                {
+                    expect(err).to.equal(null);
+                    expect(ended).to.equal(true);
+                    expect(msg).to.equal('dummy');
+                    fsq.publish('foo', { single: true }).end('bar');
+                });
             }
         }
         handler.accept_stream = true;
