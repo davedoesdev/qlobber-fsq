@@ -2864,9 +2864,13 @@ describe('qlobber-fsq', function ()
                 cb(new Error('dummy'), function (err)
                 {
                     expect(err).to.equal(null);
-                    expect(ended).to.equal(true);
                     expect(msg).to.equal('dummy');
-                    fsq.publish('foo', { single: true }).end('bar');
+
+                    process.nextTick(function ()
+                    {
+                        expect(ended).to.equal(true);
+                        fsq.publish('foo', { single: true }).end('bar');
+                    });
                 });
             }
         }
