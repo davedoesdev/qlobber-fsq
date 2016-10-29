@@ -2397,6 +2397,25 @@ describe('qlobber-fsq', function ()
         });
     });
 
+    it('should close stream if error occurs when publishing', function (done)
+    {
+        var finished = false;
+
+        var s = fsq.publish('foo', function (err)
+        {
+            expect(err.message).to.equal('dummy');
+            expect(finished).to.equal(true);
+            done();
+        });
+
+        s.on('finish', function ()
+        {
+            finished = true;
+        });
+
+        s.emit('error', new Error('dummy'));
+    });
+
     it('should support disabling work queue (single messages)', function (done)
     {
         fsq.stop_watching(function ()
