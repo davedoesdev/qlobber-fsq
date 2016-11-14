@@ -226,7 +226,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 - <a name="toc_qlobberfsqoptions"></a>[QlobberFSQ](#qlobberfsqoptions)
 
 ## Publish and subscribe
-- <a name="toc_qlobberfsqprototypesubscribetopic-handler-cb"></a><a name="toc_qlobberfsqprototype"></a>[QlobberFSQ.prototype.subscribe](#qlobberfsqprototypesubscribetopic-handler-cb)
+- <a name="toc_qlobberfsqprototypesubscribetopic-handler-options-cb"></a><a name="toc_qlobberfsqprototype"></a>[QlobberFSQ.prototype.subscribe](#qlobberfsqprototypesubscribetopic-handler-options-cb)
 - <a name="toc_qlobberfsqprototypeunsubscribetopic-handler-cb"></a>[QlobberFSQ.prototype.unsubscribe](#qlobberfsqprototypeunsubscribetopic-handler-cb)
 - <a name="toc_qlobberfsqprototypepublishtopic-payload-options-cb"></a>[QlobberFSQ.prototype.publish](#qlobberfsqprototypepublishtopic-payload-options-cb)
 
@@ -297,7 +297,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 <a name="qlobberfsqprototype"></a>
 
-## QlobberFSQ.prototype.subscribe(topic, handler, [cb])
+## QlobberFSQ.prototype.subscribe(topic, handler, [options], [cb])
 
 > Subscribe to messages in the file system queue.
 
@@ -321,6 +321,9 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
     - `{Object} err` If an error occurred then pass details of the error, otherwise pass `null` or `undefined`.
     - `{Function} [finish]` Optional function to call once the message has been deleted and unlocked, in the case of `info.single === true`, or straight away otherwise. It will be passed the following argument:
       - `{Object} err` If an error occurred then details of the error, otherwise `null`.
+
+- `{Object} [options]` Optional settings for this subscription: 
+  - `{Boolean} subscribe_to_existing` If `true` then `handler` will be called with any existing, unexpired messages that match `topic`, as well as new ones. Defaults to `false` (only new messages).
 
 - `{Function} [cb]` Optional function to call once the subscription has been registered. This will be passed the following argument: 
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.
@@ -349,7 +352,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 - `{String} topic` Message topic. The topic should be a series of words separated by `.` (or the `separator` character you provided to the [`QlobberFSQ constructor`](#qlobberfsqoptions)). Topic words can contain any character, unless you set `encode_topics` to `false` in the [`QlobberFSQ constructor`](#qlobberfsqoptions). In that case they can contain any valid filename character for your file system, although it's probably sensible to limit it to alphanumeric characters, `-`, `_` and `.`. 
 - `{String | Buffer} [payload]` Message payload. If you don't pass a payload then `publish` will return a [Writable stream](http://nodejs.org/api/stream.html#stream_class_stream_writable) for you to write the payload into. 
 - `{Object} [options]` Optional settings for this publication: 
-  - `{Boolean} single` If `true` then the message will be given to _at most_ one interested subscriber, across all `QlobberFSQ` objects scanning the file system queue. Otherwise all interested subscribers will receive the message.
+  - `{Boolean} single` If `true` then the message will be given to _at most_ one interested subscriber, across all `QlobberFSQ` objects scanning the file system queue. Otherwise all interested subscribers will receive the message (the default).
 
   - `{Integer} ttl` Time-to-live (in milliseconds) for this message. If you don't specify anything then `single_ttl` or `multi_ttl` (provided to the [`QlobberFSQ constructor`](#qlobberfsqoptions)) will be used, depending on the value of `single`. After the time-to-live for the message has passed, the message is ignored and deleted when convenient.
 

@@ -45,7 +45,7 @@ module.exports = function (grunt)
 
         shell: {
             cover: {
-                command: './node_modules/.bin/istanbul cover ./node_modules/.bin/grunt -- test ' + (fsq_dir_index < 0 ? /* istanbul ignore next */ '' : process.argv.slice(fsq_dir_index).join(' '))
+                command: './node_modules/.bin/istanbul cover -x Gruntfile.js ./node_modules/.bin/grunt -- test ' + (fsq_dir_index < 0 ? '' : process.argv.slice(fsq_dir_index).join(' '))
             },
 
             check_cover: {

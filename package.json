@@ -1,7 +1,7 @@
 {
   "name": "qlobber-fsq",
   "description": "Shared file system queue. Supports pub-sub, work queues, wildcards, multi-process and distributed use.",
-  "version": "3.3.0",
+  "version": "4.0.0",
   "homepage": "https://github.com/davedoesdev/qlobber-fsq",
   "author": {
     "name": "David Halls",
@@ -41,8 +41,8 @@
   ],
   "dependencies": {
     "qlobber": "~0.7.0",
-    "async": "~1.5.2",
-    "graceful-fs": "~4.1.3"
+    "async": "~2.1.2",
+    "graceful-fs": "~4.1.10"
   },
   "optionalDependencies": {
     "fs-ext": "~0.5.0"
@@ -50,18 +50,18 @@
   "devDependencies": {
     "grunt": "~1.0.1",
     "grunt-contrib-jshint": "~1.0.0",
-    "grunt-mocha-test": "~0.12.7",
+    "grunt-mocha-test": "~0.13.2",
     "grunt-apidox": "~0.1.9",
-    "grunt-shell": "~1.3.0",
-    "mocha": "~2.4.5",
+    "grunt-shell": "~2.0.0",
+    "mocha": "~3.1.2",
     "chai": "~3.5.0",
-    "istanbul": "~0.4.2",
-    "coveralls": "~2.11.8",
+    "istanbul": "~0.4.5",
+    "coveralls": "~2.11.14",
     "b": "git://github.com/davedoesdev/b.git",
-    "rimraf": "~2.5.2",
+    "rimraf": "~2.5.4",
     "lsof": "~0.1.0",
-    "yargs": "~4.6.0",
-    "cp-remote": "~0.1.2"
+    "yargs": "~6.3.0",
+    "cp-remote": "~0.1.3"
   },
   "engines": {
     "node": ">=0.12"

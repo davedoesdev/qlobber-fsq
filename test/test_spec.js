@@ -2408,7 +2408,7 @@ describe('qlobber-fsq', function ()
             done();
         });
 
-        s.on('finish', function ()
+        s.on('prefinish', function ()
         {
             finished = true;
         });
@@ -2774,7 +2774,7 @@ describe('qlobber-fsq', function ()
                         ttls_out.sort(num_sort);
                         expect(ttls_in).to.eql(ttls_out);
 
-                        done();
+                        this.stop_watching(done);
                     }
                     else if (ttls_in.length > n)
                     {
@@ -2897,5 +2897,423 @@ describe('qlobber-fsq', function ()
 
         fsq.subscribe('foo', handler);
         fsq.publish('foo').end('bar');
+    });
+
+    function existing_messages(dedup)
+    {
+        describe('dedup=' + dedup, function ()
+        {
+            it('should support delivering existing messages to subscribers',
+            function(done)
+            {
+                restore();
+
+                fsq.stop_watching(function ()
+                {
+                    var fsq2 = new QlobberFSQ(
+                    {
+                        fsq_dir: fsq_dir,
+                        flags: flags,
+                        ttl: 10000,
+                        dedup: dedup
+                    });
+
+                    fsq2.on('start', function ()
+                    {
+                        fsq2.subscribe('foo', function (data, info)
+                        {
+                            expect(data.toString()).to.equal('bar');
+                            expect(info.topic).to.equal('foo');
+
+                            setTimeout(function ()
+                            {
+                                fsq2.subscribe('foo', function (data2, info2)
+                                {
+                                    expect(data2.toString()).to.equal('bar');
+                                    expect(info2.topic).to.equal('foo');
+                                    expect(info2.path).to.equal(info.path);
+                                    this.stop_watching(done);
+                                },
+                                {
+                                    subscribe_to_existing: true
+                                });
+                            }, 500);
+                        });
+
+                        fsq2.publish('foo').end('bar');
+                    });
+                });
+            });
+
+            it('should support delaying existing messages with filter',
+            function (done)
+            {
+                restore();
+
+                fsq.stop_watching(function ()
+                {
+                    var count = 0;
+
+                    function filter(info, handlers, cb)
+                    {
+                        count += 1;
+                        if (count === 1)
+                        {
+                            // allow through initial pub and sub
+                            cb(null, true, handlers);
+                        }
+                        else if (count === 2)
+                        {
+                            // delay first existing
+                            cb(null, false);
+                        }
+                        else if (count === 3)
+                        {
+                            // subscribe again to existing messages
+                            fsq2.subscribe('foo', function (data, info)
+                            {
+                                expect(data.toString()).to.equal('bar');
+                                expect(info.topic).to.equal('foo');
+                            },
+                            {
+                                subscribe_to_existing: true
+                            });
+
+                            // and delay again
+                            cb(null, false);
+                        }
+                        else
+                        {
+                            // allow through existing
+                            cb(null, true, handlers);
+                        }
+                    }
+
+                    var fsq2 = new QlobberFSQ(
+                    {
+                        fsq_dir: fsq_dir,
+                        flags: flags,
+                        ttl: 10000,
+                        dedup: dedup,
+                        filter: filter
+                    });
+
+                    fsq2.on('start', function ()
+                    {
+                        fsq2.subscribe('foo', function (data, info)
+                        {
+                            expect(data.toString()).to.equal('bar');
+                            expect(info.topic).to.equal('foo');
+
+                            setTimeout(function ()
+                            {
+                                fsq2.subscribe('foo', function (data2, info2)
+                                {
+                                    expect(data2.toString()).to.equal('bar');
+                                    expect(info2.topic).to.equal('foo');
+                                    expect(info2.path).to.equal(info.path);
+                                    this.stop_watching(done);
+                                },
+                                {
+                                    subscribe_to_existing: true
+                                });
+                            }, 500);
+                        });
+
+                        fsq2.publish('foo').end('bar');
+                    });
+                });
+            });
+
+            it('should support delaying existing messages twice',
+            function (done)
+            {
+                restore();
+
+                fsq.stop_watching(function ()
+                {
+                    var count = 0;
+
+                    function filter(info, handlers, cb)
+                    {
+                        count += 1;
+                        if (count === 1)
+                        {
+                            // allow through initial pub and sub
+                            cb(null, true, handlers);
+                        }
+                        else if (count === 2)
+                        {
+                            // delay first existing
+                            cb(null, false);
+                        }
+                        else if (count === 3)
+                        {
+                            // subscribe again to existing messages
+                            fsq2.subscribe('foo', function (data, info)
+                            {
+                                expect(data.toString()).to.equal('bar');
+                                expect(info.topic).to.equal('foo');
+                            },
+                            {
+                                subscribe_to_existing: true
+                            });
+
+                            // for old method which checks if has unsubscribed
+                            fsq2.unsubscribe('dummy');
+
+                            // and delay again
+                            cb(null, false);
+                        }
+                        else if (count === 4)
+                        {
+                            // and delay again
+                            cb(null, false);
+                        }
+                        else
+                        {
+                            // allow through existing
+                            cb(null, true, handlers);
+                        }
+                    }
+
+                    var fsq2 = new QlobberFSQ(
+                    {
+                        fsq_dir: fsq_dir,
+                        flags: flags,
+                        ttl: 10000,
+                        dedup: dedup,
+                        filter: filter
+                    });
+
+                    fsq2.on('start', function ()
+                    {
+                        fsq2.subscribe('foo', function (data, info)
+                        {
+                            expect(data.toString()).to.equal('bar');
+                            expect(info.topic).to.equal('foo');
+
+                            setTimeout(function ()
+                            {
+                                fsq2.subscribe('foo', function (data2, info2)
+                                {
+                                    expect(data2.toString()).to.equal('bar');
+                                    expect(info2.topic).to.equal('foo');
+                                    expect(info2.path).to.equal(info.path);
+                                    this.stop_watching(done);
+                                },
+                                {
+                                    subscribe_to_existing: true
+                                });
+                            }, 500);
+                        });
+
+                        fsq2.publish('foo').end('bar');
+                    });
+                });
+            });
+
+            it('should subscribe to new messages too',
+            function (done)
+            {
+                restore();
+
+                fsq.stop_watching(function ()
+                {
+                    var fsq2 = new QlobberFSQ(
+                    {
+                        fsq_dir: fsq_dir,
+                        flags: flags,
+                        ttl: 10000,
+                        dedup: dedup
+                    });
+
+                    fsq2.on('start', function ()
+                    {
+                        fsq2.subscribe('foo', function (data, info)
+                        {
+                            expect(data.toString()).to.equal('bar');
+                            expect(info.topic).to.equal('foo');
+                            this.stop_watching(done);
+                        },
+                        {
+                            subscribe_to_existing: true
+                        });
+
+                        fsq2.publish('foo').end('bar');
+                    });
+                });
+            });
+
+            it('should support unsubscribing from existing messages',
+            function(done)
+            {
+                restore();
+
+                fsq.stop_watching(function ()
+                {
+                    var fsq2 = new QlobberFSQ(
+                    {
+                        fsq_dir: fsq_dir,
+                        flags: flags,
+                        ttl: 10000,
+                        dedup: dedup
+                    });
+
+                    fsq2.on('start', function ()
+                    {
+                        fsq2.subscribe('foo', function (data, info)
+                        {
+                            expect(data.toString()).to.equal('bar');
+                            expect(info.topic).to.equal('foo');
+
+                            setTimeout(function ()
+                            {
+                                function handler()
+                                {
+                                    done(new Error('should not be called'));
+                                }
+
+                                fsq2.subscribe('foo', handler,
+                                {
+                                    subscribe_to_existing: true
+                                });
+
+                                fsq2.unsubscribe('foo', handler);
+
+                                setTimeout(function ()
+                                {
+                                    fsq2.stop_watching(done);
+                                }, 1500);
+                            }, 500);
+                        });
+
+                        fsq2.publish('foo').end('bar');
+                    });
+                });
+            });
+
+            function unsub_delayed_existing(unsub, done)
+            {
+                restore();
+
+                fsq.stop_watching(function ()
+                {
+                    var count = 0;
+
+                    function handler()
+                    {
+                        done(new Error('should not be called'));
+                    }
+
+                    function handler2()
+                    {
+                        done(new Error('should not be called'));
+                    }
+
+                    function filter(info, handlers, cb)
+                    {
+                        count += 1;
+                        if (count === 1)
+                        {
+                            // allow through initial pub and sub
+                            cb(null, true, handlers);
+                        }
+                        else if (count === 2)
+                        {
+                            // delay first existing
+                            cb(null, false);
+                        }
+                        else if (count === 3)
+                        {
+                            // subscribe again to existing messages
+                            fsq2.subscribe('foo', handler2,
+                            {
+                                subscribe_to_existing: true
+                            });
+
+                            // unsubscribe
+                            unsub(fsq2, handler, handler2);
+
+                            // and delay again
+                            cb(null, false);
+
+                            setTimeout(function ()
+                            {
+                                fsq2.stop_watching(done);
+                            }, 1500);
+                        }
+                        else
+                        {
+                            // existing message doesn't call filter if there
+                            // are no handlers
+                            done(new Error('called too many times'));
+                        }
+                    }
+
+                    var fsq2 = new QlobberFSQ(
+                    {
+                        fsq_dir: fsq_dir,
+                        flags: flags,
+                        ttl: 10000,
+                        dedup: dedup,
+                        filter: filter
+                    });
+
+                    fsq2.on('start', function ()
+                    {
+                        fsq2.subscribe('foo', function (data, info)
+                        {
+                            expect(data.toString()).to.equal('bar');
+                            expect(info.topic).to.equal('foo');
+
+                            setTimeout(function ()
+                            {
+                                fsq2.subscribe('foo', handler,
+                                {
+                                    subscribe_to_existing: true
+                                });
+                            }, 500);
+                        });
+
+                        fsq2.publish('foo').end('bar');
+                    });
+                });
+            }
+
+            it('should support unsubscribing from delayed existing messages (by handler)',
+            function (done)
+            {
+                unsub_delayed_existing(function (fsq2, handler, handler2)
+                {
+                    fsq2.unsubscribe('foo', handler);
+                    fsq2.unsubscribe('foo', handler2);
+                }, done);
+            });
+
+            it('should support unsubscribing from delayed existing messages (by topic)',
+            function (done)
+            {
+                unsub_delayed_existing(function (fsq2, handler, handler2)
+                {
+                    fsq2.unsubscribe('foo');
+                }, done);
+            });
+
+            it('should support unsubscribing from delayed existing messages (all)',
+            function (done)
+            {
+                unsub_delayed_existing(function (fsq2, handler, handler2)
+                {
+                    fsq2.unsubscribe();
+                }, done);
+            });
+        });
+    }
+
+    describe('existing messages', function ()
+    {
+        existing_messages(true);
+        existing_messages(false);
     });
 });
