@@ -92,7 +92,7 @@ npm install qlobber-fsq
 
 - `qlobber-fsq` makes no assurances about the security or privacy of messages in transit or at rest. It's up to your application to encrypt messages if required.
 
-- `qlobber-fsq` supports Node 0.12 onwards.
+- `qlobber-fsq` supports Node 4 onwards.
 
 ## Distributed filesystems
 
