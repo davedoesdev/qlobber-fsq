@@ -336,8 +336,8 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 **Parameters:**
 
-- `{String} [topic]` Which messages you're no longer interested in receiving via the `handler` function. This should be a topic you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-cb). If topic is `undefined` then all handlers for all topics are unsubscribed. 
-- `{Function} [handler]` The function you no longer want to be called with messages published to the topic `topic`. This should be a function you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-cb). If you subscribed `handler` to a different topic then it will still be called for messages which match that topic. If `handler` is undefined, all handlers for the topic `topic` are unsubscribed. 
+- `{String} [topic]` Which messages you're no longer interested in receiving via the `handler` function. This should be a topic you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-options-cb). If topic is `undefined` then all handlers for all topics are unsubscribed. 
+- `{Function} [handler]` The function you no longer want to be called with messages published to the topic `topic`. This should be a function you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-options-cb). If you subscribed `handler` to a different topic then it will still be called for messages which match that topic. If `handler` is undefined, all handlers for the topic `topic` are unsubscribed. 
 - `{Function} [cb]` Optional function to call once `handler` has been unsubscribed from `topic`. This will be passed the following argument: 
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
@@ -406,7 +406,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 > `start` event
 
-`QlobberFSQ` objects fire a `start` event when they're ready to publish messages. Don't call [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb) until the `start` event is emitted or the message may be dropped. You can [`subscribe`](#qlobberfsqprototypesubscribetopic-options-handler-cb) to messages before `start` is fired, however.
+`QlobberFSQ` objects fire a `start` event when they're ready to publish messages. Don't call [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb) until the `start` event is emitted or the message may be dropped. You can [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-options-cb) to messages before `start` is fired, however.
 
 A `start` event won't be fired after a [`stop`](#qlobberfsqeventsstop) event.
 
