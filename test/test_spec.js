@@ -2922,6 +2922,7 @@ describe('qlobber-fsq', function ()
                     {
                         fsq2.subscribe('foo', function (data, info)
                         {
+                            expect(info.existing).to.equal(undefined);
                             expect(data.toString()).to.equal('bar');
                             expect(info.topic).to.equal('foo');
 
@@ -2929,6 +2930,8 @@ describe('qlobber-fsq', function ()
                             {
                                 fsq2.subscribe('foo', function (data2, info2)
                                 {
+                                    expect(info.existing).to.equal(undefined);
+                                    expect(info2.existing).to.equal(true);
                                     expect(data2.toString()).to.equal('bar');
                                     expect(info2.topic).to.equal('foo');
                                     expect(info2.path).to.equal(info.path);
@@ -2972,6 +2975,7 @@ describe('qlobber-fsq', function ()
                             // subscribe again to existing messages
                             fsq2.subscribe('foo', function (data, info)
                             {
+                                expect(info.existing).to.equal(true);
                                 expect(data.toString()).to.equal('bar');
                                 expect(info.topic).to.equal('foo');
                             },
@@ -3002,6 +3006,7 @@ describe('qlobber-fsq', function ()
                     {
                         fsq2.subscribe('foo', function (data, info)
                         {
+                            expect(info.existing).to.equal(undefined);
                             expect(data.toString()).to.equal('bar');
                             expect(info.topic).to.equal('foo');
 
@@ -3009,6 +3014,8 @@ describe('qlobber-fsq', function ()
                             {
                                 fsq2.subscribe('foo', function (data2, info2)
                                 {
+                                    expect(info.existing).to.equal(undefined);
+                                    expect(info2.existing).to.equal(true);
                                     expect(data2.toString()).to.equal('bar');
                                     expect(info2.topic).to.equal('foo');
                                     expect(info2.path).to.equal(info.path);
@@ -3052,6 +3059,7 @@ describe('qlobber-fsq', function ()
                             // subscribe again to existing messages
                             fsq2.subscribe('foo', function (data, info)
                             {
+                                expect(info.existing).to.equal(true);
                                 expect(data.toString()).to.equal('bar');
                                 expect(info.topic).to.equal('foo');
                             },
@@ -3090,6 +3098,7 @@ describe('qlobber-fsq', function ()
                     {
                         fsq2.subscribe('foo', function (data, info)
                         {
+                            expect(info.existing).to.equal(undefined);
                             expect(data.toString()).to.equal('bar');
                             expect(info.topic).to.equal('foo');
 
@@ -3097,6 +3106,8 @@ describe('qlobber-fsq', function ()
                             {
                                 fsq2.subscribe('foo', function (data2, info2)
                                 {
+                                    expect(info.existing).to.equal(undefined);
+                                    expect(info2.existing).to.equal(true);
                                     expect(data2.toString()).to.equal('bar');
                                     expect(info2.topic).to.equal('foo');
                                     expect(info2.path).to.equal(info.path);
@@ -3132,6 +3143,7 @@ describe('qlobber-fsq', function ()
                     {
                         fsq2.subscribe('foo', function (data, info)
                         {
+                            expect(info.existing).to.equal(undefined);
                             expect(data.toString()).to.equal('bar');
                             expect(info.topic).to.equal('foo');
                             this.stop_watching(done);
@@ -3164,6 +3176,7 @@ describe('qlobber-fsq', function ()
                     {
                         fsq2.subscribe('foo', function (data, info)
                         {
+                            expect(info.existing).to.equal(undefined);
                             expect(data.toString()).to.equal('bar');
                             expect(info.topic).to.equal('foo');
 
@@ -3264,6 +3277,7 @@ describe('qlobber-fsq', function ()
                     {
                         fsq2.subscribe('foo', function (data, info)
                         {
+                            expect(info.existing).to.equal(undefined);
                             expect(data.toString()).to.equal('bar');
                             expect(info.topic).to.equal('foo');
 
