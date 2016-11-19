@@ -129,6 +129,8 @@ describe('qlobber-fsq', function ()
 
     it('should subscribe and publish to a simple topic', function (done)
     {
+        var pub_info;
+
         fsq.subscribe('foo', function (data, info)
         {
             expect(info.topic).to.equal('foo');
@@ -136,13 +138,15 @@ describe('qlobber-fsq', function ()
             expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
             expect(info.fname.lastIndexOf(new Buffer('foo').toString('hex') + '@', 0)).to.equal(0);
             expect(info.topic_path).to.equal(undefined);
+            expect(info).to.eql(pub_info);
             expect(data.toString('utf8')).to.equal('bar');
             done();
         });
 
-        fsq.publish('foo', 'bar', function (err)
+        fsq.publish('foo', 'bar', function (err, info)
         {
             if (err) { done(err); }
+            pub_info = info;
         });
     });
 
