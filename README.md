@@ -315,6 +315,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
     - `{String} [topic_path]` Full path to the file in which the topic overspill is stored (only present if the topic is too long to fit in the file name).
     - `{Integer} expires` When the message expires (number of milliseconds after 1 January 1970 00:00:00 UTC).
     - `{Boolean} single` Whether this message is being given to at most one subscriber (across all `QlobberFSQ` objects).
+    - `{Integer} size` Message size in bytes.
 
   - `{Function} done` Function to call once you've handled the message. Note that calling this function is only mandatory if `info.single === true`, in order to delete and unlock the file. `done` takes two arguments:
 
