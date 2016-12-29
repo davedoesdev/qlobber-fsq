@@ -3334,4 +3334,35 @@ describe('qlobber-fsq', function ()
         existing_messages(true);
         existing_messages(false);
     });
+
+    it('should subscribe and publish to a simple topic', function (done)
+    {
+        var orig_open = fs.open;
+
+        function handler()
+        {
+            done(new Error('should not be called'));
+        }
+
+        fs.open = function (path, flags, cb)
+        {
+            fs.open = orig_open;
+            var ths = this;
+            fsq.unsubscribe('foo', handler, function (err)
+            {
+                if (err) { return done(err); }
+                setImmediate(done);
+                orig_open.call(ths, path, flags, cb);
+            });
+        };
+
+        fsq.subscribe('foo', handler, function (err)
+        {
+            if (err) { return done(err); }
+            fsq.publish('foo', 'bar', function (err, info)
+            {
+                if (err) { done(err); }
+            });
+        });
+    });
 });
