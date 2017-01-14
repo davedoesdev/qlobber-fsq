@@ -131,7 +131,7 @@ describe('qlobber-fsq', function ()
     {
         var pub_info;
 
-        fsq.subscribe('foo', function (data, info)
+        fsq.subscribe('foo', function handler(data, info, cb)
         {
             expect(info.topic).to.equal('foo');
             expect(info.single).to.equal(false);
@@ -140,6 +140,8 @@ describe('qlobber-fsq', function ()
             expect(info.topic_path).to.equal(undefined);
             expect(info).to.eql(pub_info);
             expect(data.toString('utf8')).to.equal('bar');
+            expect(cb.handlers.size).to.equal(1);
+            expect(cb.handlers.has(handler)).to.equal(true);
             done();
         });
 
