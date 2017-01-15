@@ -140,8 +140,7 @@ describe('qlobber-fsq', function ()
             expect(info.topic_path).to.equal(undefined);
             expect(info).to.eql(pub_info);
             expect(data.toString('utf8')).to.equal('bar');
-            expect(cb.handlers.size).to.equal(1);
-            expect(cb.handlers.has(handler)).to.equal(true);
+            expect(cb.num_handlers).to.equal(1);
             done();
         });
 
