@@ -2421,6 +2421,28 @@ describe('qlobber-fsq', function ()
         s.emit('error', new Error('dummy'));
     });
 
+    it('should close stream if error occurs when publishing after open', function (done)
+    {
+        var finished = false;
+
+        var s = fsq.publish('foo', function (err)
+        {
+            expect(err.message).to.equal('dummy');
+            expect(finished).to.equal(true);
+            done();
+        });
+
+        s.on('prefinish', function ()
+        {
+            finished = true;
+        });
+
+        s.on('open', function ()
+        {
+            this.emit('error', new Error('dummy'));
+        });
+    });
+
     it('should support disabling work queue (single messages)', function (done)
     {
         fsq.stop_watching(function ()
