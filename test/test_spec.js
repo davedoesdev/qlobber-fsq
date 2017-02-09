@@ -2535,9 +2535,13 @@ describe('qlobber-fsq', function ()
 
         var s = fsq.publish('foo', function (err)
         {
-            expect(err.message).to.equal('dummy');
-            expect(finished).to.equal(true);
-            done();
+            // wait for initial byte write to be done, which holds up prefinish
+            setTimeout(function ()
+            {
+                expect(err.message).to.equal('dummy');
+                expect(finished).to.equal(true);
+                done();
+            }, 500);
         });
 
         s.on('prefinish', function ()
