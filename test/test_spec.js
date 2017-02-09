@@ -695,6 +695,133 @@ describe('qlobber-fsq', function ()
         });
     });
 
+    it('should be able to set filter by property', function (done)
+    {
+        function handler1()
+        {
+            throw new Error('should not be called');
+        }
+
+        function handler2(data, info, cb)
+        {
+            cb(null, done);
+        }
+
+        fsq.filter = function (info, handlers, cb)
+        {
+            expect(info.topic).to.equal('foo');
+            handlers.delete(handler1);
+            cb(null, true, handlers);
+        };
+
+        fsq.subscribe('foo', handler1);
+        fsq.subscribe('foo', handler2);
+
+        fsq.publish('foo', 'bar', function (err)
+        {
+            if (err) { done(err); }
+        });
+    });
+
+    it('should support multiple filters', function (done)
+    {
+        function handler1()
+        {
+            throw new Error('should not be called');
+        }
+
+        function handler2()
+        {
+            throw new Error('should not be called');
+        }
+
+        function handler3(data, info, cb)
+        {
+            cb(null, done);
+        }
+
+        fsq.filter = [
+            function (info, handlers, cb)
+            {
+                expect(info.topic).to.equal('foo');
+                handlers.delete(handler1);
+                cb(null, true, handlers);
+            },
+
+            function (info, handlers, cb)
+            {
+                expect(info.topic).to.equal('foo');
+                handlers.delete(handler2);
+                cb(null, true, handlers);
+            }
+        ];
+
+        fsq.subscribe('foo', handler1);
+        fsq.subscribe('foo', handler2);
+        fsq.subscribe('foo', handler3);
+
+        fsq.publish('foo', 'bar', function (err)
+        {
+            if (err) { done(err); }
+        });
+    });
+
+    it('should not call other filters if error', function (done)
+    {
+        var called = false;
+
+        fsq.filter = [
+            function (info, handlers, cb)
+            {
+                expect(info.topic).to.equal('foo');
+                cb(new Error('dummy'));
+                if (called)
+                {
+                    return done();
+                }
+                called = true;
+            },
+
+            function (info, handlers, cb)
+            {
+                throw new Error('should not be called');
+            }
+        ];
+
+        fsq.publish('foo', 'bar', function (err)
+        {
+            if (err) { done(err); }
+        });
+    });
+
+    it('should not call other filters if not ready', function (done)
+    {
+        var called = false;
+
+        fsq.filter = [
+            function (info, handlers, cb)
+            {
+                expect(info.topic).to.equal('foo');
+                cb(null, false);
+                if (called)
+                {
+                    return done();
+                }
+                called = true;
+            },
+
+            function (info, handlers, cb)
+            {
+                throw new Error('should not be called');
+            }
+        ];
+
+        fsq.publish('foo', 'bar', function (err)
+        {
+            if (err) { done(err); }
+        });
+    });
+
     if (single_supported)
     {
         it('should put work back on queue for another handler', function (done)
