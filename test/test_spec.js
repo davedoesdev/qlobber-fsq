@@ -707,12 +707,12 @@ describe('qlobber-fsq', function ()
             cb(null, done);
         }
 
-        fsq.filter = function (info, handlers, cb)
+        fsq.filters.push(function (info, handlers, cb)
         {
             expect(info.topic).to.equal('foo');
             handlers.delete(handler1);
             cb(null, true, handlers);
-        };
+        });
 
         fsq.subscribe('foo', handler1);
         fsq.subscribe('foo', handler2);
@@ -740,7 +740,7 @@ describe('qlobber-fsq', function ()
             cb(null, done);
         }
 
-        fsq.filter = [
+        fsq.filters.push(
             function (info, handlers, cb)
             {
                 expect(info.topic).to.equal('foo');
@@ -754,7 +754,7 @@ describe('qlobber-fsq', function ()
                 handlers.delete(handler2);
                 cb(null, true, handlers);
             }
-        ];
+        );
 
         fsq.subscribe('foo', handler1);
         fsq.subscribe('foo', handler2);
@@ -770,7 +770,7 @@ describe('qlobber-fsq', function ()
     {
         var called = false;
 
-        fsq.filter = [
+        fsq.filters.push(
             function (info, handlers, cb)
             {
                 expect(info.topic).to.equal('foo');
@@ -786,7 +786,7 @@ describe('qlobber-fsq', function ()
             {
                 throw new Error('should not be called');
             }
-        ];
+        );
 
         fsq.publish('foo', 'bar', function (err)
         {
@@ -798,7 +798,7 @@ describe('qlobber-fsq', function ()
     {
         var called = false;
 
-        fsq.filter = [
+        fsq.filters.push(
             function (info, handlers, cb)
             {
                 expect(info.topic).to.equal('foo');
@@ -814,7 +814,7 @@ describe('qlobber-fsq', function ()
             {
                 throw new Error('should not be called');
             }
-        ];
+        );
 
         fsq.publish('foo', 'bar', function (err)
         {
