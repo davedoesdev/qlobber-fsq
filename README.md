@@ -302,7 +302,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
     - You can supply an array of filter functions - each will be called in turn with the `filtered_handlers` from the previous one.
 
-    - The filter function(s) are also available as the `filter` property of the `QlobberFSQ` object and can be changed whenever you want.
+    - An array containing the filter functions is also available as the `filters` property of the `QlobberFSQ` object and can be modified at any time.
 
 <sub>Go: [TOC](#tableofcontents)</sub>
 
