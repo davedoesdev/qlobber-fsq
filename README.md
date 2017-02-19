@@ -298,7 +298,9 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
     - If you want to ignore the message _at this time_ then pass `false` as the second argument to `cb`. `filter` will be called again later with the same message.
     - Defaults to a function which calls `cb(null, true, handlers)`.
     
-    - `handlers` and `filtered_handlers` are ES6 Sets, or arrays if `options.dedup` is falsey.
+    - `handlers` is an ES6 Set, or array if `options.dedup` is falsey.
+
+    - `filtered_handlers` should be an ES6 Set, or array if `options.dedup` is falsey. If not, `new Set(filtered_handlers)` or `Array.from(filtered_handlers)` will be used to convert it.
 
     - You can supply an array of filter functions - each will be called in turn with the `filtered_handlers` from the previous one.
 

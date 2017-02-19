@@ -9,6 +9,7 @@
          flags: false,
          check_empty: false,
          async: false,
+         wu: false,
          path: false,
          crypto: false,
          lsof: false,
@@ -720,6 +721,90 @@ describe('qlobber-fsq', function ()
         fsq.publish('foo', 'bar', function (err)
         {
             if (err) { done(err); }
+        });
+    });
+
+    it('should be able to pass filtered handlers as iterator (Set)', function (done)
+    {
+        function handler1()
+        {
+            throw new Error('should not be called');
+        }
+
+        function handler2(data, info, cb)
+        {
+            cb(null, done);
+        }
+
+        fsq.filters.push(function (info, handlers, cb)
+        {
+            expect(info.topic).to.equal('foo');
+            cb(null, true, wu(handlers).filter(function (h)
+            {
+                return h !== handler1;
+            }));
+        });
+
+        fsq.subscribe('foo', handler1);
+        fsq.subscribe('foo', handler2);
+
+        fsq.publish('foo', 'bar', function (err)
+        {
+            if (err) { done(err); }
+        });
+    });
+
+    it('should be able to pass filtered handlers as iterator (Array)', function (done)
+    {
+        fsq.stop_watching(function ()
+        {
+            function handler1()
+            {
+                throw new Error('should not be called');
+            }
+
+            var fsq2; 
+
+            /*jslint unparam: true */
+            function handler2(data, info, cb)
+            {
+                cb(null, function (err)
+                {
+                    fsq2.stop_watching(function ()
+                    {
+                        done(err);
+                    });
+                });
+            }
+            /*jslint unparam: false */
+
+            fsq2 = new QlobberFSQ(
+            {
+                fsq_dir: fsq_dir,
+                flags: flags,
+                filter: function (info, handlers, cb)
+                {
+                    expect(info.topic).to.equal('foo');
+                    cb(null, true, wu(handlers).filter(function (h)
+                    {
+                        return h !== handler1;
+                    }));
+                },
+                dedup: false
+            });
+
+            ignore_ebusy(fsq2);
+
+            fsq2.subscribe('foo', handler1);
+            fsq2.subscribe('foo', handler2);
+
+            fsq2.on('start', function ()
+            {
+                fsq2.publish('foo', 'bar', function (err)
+                {
+                    if (err) { done(err); }
+                });
+            });
         });
     });
 

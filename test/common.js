@@ -7,6 +7,7 @@
           constants: false,
           QlobberFSQ: false,
           async: false,
+          wu: false,
           rimraf: false,
           fsq: true,
           fs: false,
@@ -36,6 +37,7 @@ global.util = require('util');
 global.child_process = require('child_process');
 global.rimraf = require('rimraf');
 global.async = require('async');
+global.wu = require('wu');
 global.lsof = require('lsof');
 global.constants = require('constants');
 global.expect = require('chai').expect;
