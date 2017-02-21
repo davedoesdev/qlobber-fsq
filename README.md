@@ -382,8 +382,10 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
     - `{String|Buffer} payload` Message payload.
     - `{Object} options` The optional settings for this publication.
 
-- `{Function} [cb]` Optional function to call once the message has been written to the file system queue. This will be called after the message has been moved into its bucket and is therefore available to subscribers in any `QlobberFSQ` object scanning the queue. It will be passed the following argument: 
+- `{Function} [cb]` Optional function to call once the message has been written to the file system queue. This will be called after the message has been moved into its bucket and is therefore available to subscribers in any `QlobberFSQ` object scanning the queue. It will be passed the following arguments: 
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.
+
+  - `{Object} info` Metadata for the message. See [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-options-cb) for a description of `info`'s properties.
 
 
 **Return:**
