@@ -120,7 +120,7 @@ tuneUseGlobalFileLocks        = true
 Under the directory you specify for `fsq_dir`, `qlobber-fsq` creates the following sub-directories:
 
 - `staging` Whilst it's being published, each message is written to a file in the staging area. The filename itself contains the message's topic, when it expires, whether it should be read by one subscriber or many and a random sequence of characters to make it unique.
-- `messages` Once published to the staging area, each message is moved into this directory. `qlobber-fsq` actually creates a number of sub-directories (called buckets) under `messages` and distributes message between buckets according to the hash of their filenames. This helps to reduce the number of directory entries that have to be read when a single message is written. 
+- `messages` Once published to the staging area, each message is moved into this directory. `qlobber-fsq` actually creates a number of sub-directories (called buckets) under `messages` and distributes message between buckets according to the hash of their filenames. This helps to reduce the number of directory entries that have to be read when a single message is written.
 - `topics` If a message's topic is long, a separate topic file is created for it in this directory.
 - `update` This contains one file, `UPDATE`, which is updated with a random sequence of bytes (called a stamp) every time a message is moved into the `messages` directory. `UPDATE` contains a separate stamp for each bucket.
 
@@ -152,7 +152,7 @@ To run the default tests:
 grunt test [--fsq-dir=<path>]
 ```
 
-If you don't specify `--fsq-dir` then the default will be used (a directory named `fsq` in the `qlobber-fsq` module directory).
+If you don't specify `--fsq-dir` then the default will be used (a directory named `fsq` in the `test` directory).
 
 To run the stress tests (multiple queues in a single Node process):
 
@@ -210,12 +210,12 @@ grunt bench [--fsq-dir=<path>] \
              --remote=<host1> --remote=<host2> ...)
 ```
 
-If you don't specify `--fsq-dir` then the default will be used (a directory named `fsq` in the `qlobber-fsq` module directory).
+If you don't specify `--fsq-dir` then the default will be used (a directory named `fsq` in the `bench` directory).
 
 If you provide at least one `--remote <host>` argument then the benchmark will be distributed across multiple hosts using [`cp-remote`](https://github.com/davedoesdev/cp-remote). Make sure on each host:
 
 - The `qlobber-fsq` module is installed at the same location.
-- Mount the same distributed file system on the directory you specify for `--fsq-dir`. FraunhoferFS is the only distributed file system currently supported.
+- Mount the same distributed file system on the directory you specify for `--fsq-dir`. FraunhoferFS and CephFS are the only distributed file systems currently supported.
 
 # API
 
@@ -252,7 +252,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
   - `{String} fsq_dir` The path to the file system queue directory. Note that the following sub-directories will be created under this directory if they don't exist: `messages`, `staging`, `topics` and `update`. Defaults to a directory named `fsq` in the `qlobber-fsq` module directory.
 
   - `{Boolean} encode_topics` Whether to hex-encode message topics. Because topic strings form part of message filenames, they're first hex-encoded. If you can ensure that your message topics contain only valid filename characters, set this to `false` to skip encoding.
-  
+
   - `{Integer} split_topic_at` Maximum number of characters in a short topic. Short topics are contained entirely in a message's filename. Long topics are split so the first `split_topic_at` characters go in the filename and the rest are written to a separate file in the `topics` sub-directory. Obviously long topics are less efficient. Defaults to 200, which is the maximum for most common file systems. Note: if your `fsq_dir` is on an [`ecryptfs`](http://ecryptfs.org/) file system then you should set `split_topic_at` to 100.
 
   - `{Integer} bucket_base`, `{Integer} bucket_num_chars` Messages are distributed across different _buckets_ for efficiency. Each bucket is a sub-directory of the `messages` directory. The number of buckets is determined by the `bucket_base` and `bucket_num_chars` options. `bucket_base` is the radix to use for bucket names and `bucket_num_chars` is the number of digits in each name. For example, `bucket_base: 26` and `bucket_num_chars: 4` results in buckets `0000` through `pppp`. Defaults to `base_base: 16` and `bucket_num_chars: 2` (i.e. buckets `00` through `ff`).
@@ -263,7 +263,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{Integer} unique_bytes` Number of random bytes to append to each message's filename (encoded in hex), in order to avoid name clashes. Defaults to 16. If you increase it (or change the algorithm to add some extra information like the hostname), be sure to reduce `split_topic_at` accordingly.
 
-  - `{Integer} single_ttl` Default time-to-live (in milliseconds) for messages which should be read by at most one subscriber. This value is added to the current time and the resulting expiry time is put into the message's filename. After the expiry time, the message is ignored and deleted when convenient. Defaults to 1 hour. 
+  - `{Integer} single_ttl` Default time-to-live (in milliseconds) for messages which should be read by at most one subscriber. This value is added to the current time and the resulting expiry time is put into the message's filename. After the expiry time, the message is ignored and deleted when convenient. Defaults to 1 hour.
 
   - `{Integer} multi_ttl` Default time-to-live (in milliseconds) for messages which can be read by many subscribers. This value is added to the current time and the resulting expiry time is put into the message's filename. After the expiry time, the message is ignored and deleted when convenient. Defaults to 5 seconds.
 
@@ -271,7 +271,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{Boolean} notify` Whether to use [`fs.watch`](http://nodejs.org/api/fs.html#fs_fs_watch_filename_options_listener) to watch for changes to the `UPDATE` file. Note that this will be done in addition to reading it every `poll_interval` milliseconds because `fs.watch` (`inotify` underneath) can be unreliable, especially under high load. Defaults to `true`.
 
-  - `{Integer} retry_interval` Some I/O operations can fail with an error indicating they should be retried. `retry_interval` is the time (in milliseconds) to wait before retrying. Dfaults to 1 second.
+  - `{Integer} retry_interval` Some I/O operations can fail with an error indicating they should be retried. `retry_interval` is the time (in milliseconds) to wait before retrying. Defaults to 1 second.
 
   - `{Integer} message_concurrency` The number of messages in each bucket to process at once. Defaults to 1.
 
@@ -292,12 +292,12 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
   - `{String} wildcard_some` The character to use for matching zero or more words in a message topic to a subscriber. Defaults to `#`.
 
   - `{Function (info, handlers, cb(err, ready, filtered_handlers)) | Array} filter` Function called before each message is processed.
-  
+
     - You can use this to filter the subscribed handler functions to be called for the message (by passing the filtered list as the third argument to `cb`).
-    
+
     - If you want to ignore the message _at this time_ then pass `false` as the second argument to `cb`. `filter` will be called again later with the same message.
     - Defaults to a function which calls `cb(null, true, handlers)`.
-    
+
     - `handlers` is an ES6 Set, or array if `options.dedup` is falsey.
 
     - `filtered_handlers` should be an ES6 Set, or array if `options.dedup` is falsey. If not, `new Set(filtered_handlers)` or `Array.from(filtered_handlers)` will be used to convert it.
