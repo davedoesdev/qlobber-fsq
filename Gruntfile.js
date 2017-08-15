@@ -45,7 +45,7 @@ module.exports = function (grunt)
 
         exec: {
             cover: {
-                cmd: "./node_modules/.bin/nyc -x Gruntfile.js -x 'test/**' ./node_modules/.bin/grunt test ' + (fsq_dir_index < 0 ? '' : process.argv.slice(fsq_dir_index).join(' '))"
+                cmd: "./node_modules/.bin/nyc -x Gruntfile.js -x 'test/**' ./node_modules/.bin/grunt test " + (fsq_dir_index < 0 ? '' : process.argv.slice(fsq_dir_index).join(' '))
             },
 
             cover_report: {
@@ -53,7 +53,7 @@ module.exports = function (grunt)
             },
 
             cover_check: {
-                cmd: './node_modules/.bin/nyc check-coverage --statements 100 --branches 100 --functions 100 --lines 100'
+                cmd: './node_modules/.bin/nyc check-coverage --statements 90 --branches 85 --functions 95 --lines 95'
             },
 
             coveralls: {
