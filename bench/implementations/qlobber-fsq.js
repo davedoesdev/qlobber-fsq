@@ -65,7 +65,9 @@ before(function (times, done)
                         rounds: argv.rounds,
                         size: argv.size,
                         ttl: argv.ttl * 1000,
-                        fsq_dir: fsq_dir
+                        fsq_dir: fsq_dir,
+                        //multicast_address: '230.185.192.108',
+                        //multicast_port: 8088
                     })).toString('hex'),
                     child;
                     

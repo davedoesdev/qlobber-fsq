@@ -111,7 +111,9 @@ beforeEach(function (done)
             {
                 fsq_dir: fsq_dir,
                 flags: flags,
-                retry_interval: retry_interval
+                retry_interval: retry_interval,
+                multicast_address: '230.185.192.108',
+                multicast_port: 8088
             });
 
             ignore_ebusy(fsq);
