@@ -45,6 +45,7 @@
     "graceful-fs": "~4.1.11",
     "object.assign": "~4.0.4",
     "qlobber": "~1.8.0",
+    "unix-dgram": "git+https://github.com/dutchanddutch/node-unix-dgram",
     "wu": "~2.1.0"
   },
   "optionalDependencies": {
