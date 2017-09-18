@@ -45,7 +45,6 @@
     "graceful-fs": "~4.1.11",
     "object.assign": "~4.0.4",
     "qlobber": "~1.8.0",
-    "unix-dgram": "git+https://github.com/dutchanddutch/node-unix-dgram",
     "wu": "~2.1.0"
   },
   "optionalDependencies": {
@@ -65,7 +64,8 @@
     "rimraf": "~2.6.1",
     "lsof": "~0.1.0",
     "yargs": "~8.0.2",
-    "cp-remote": "~0.1.3"
+    "cp-remote": "~0.1.3",
+    "shared-memory-disruptor": "^1.1.0"
   },
   "engines": {
     "node": ">=4"

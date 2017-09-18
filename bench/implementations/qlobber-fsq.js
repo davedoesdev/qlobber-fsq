@@ -56,6 +56,16 @@ before(function (times, done)
         },
         function (cb)
         {
+            if (argv.disruptor)
+            {
+                var Disruptor = require('shared-memory-disruptor').Disruptor;
+                var d = new Disruptor('/test', 1024 * 64, 1024, argv.queues, 0, true, false);
+                d.release();
+            }
+            cb();
+        },
+        function (cb)
+        {
             async.times(argv.queues, function (n, cb)
             {
                 var bench_fsq = path.join(__dirname, 'bench-fsq', 'bench-fsq.js'),
@@ -66,8 +76,7 @@ before(function (times, done)
                         size: argv.size,
                         ttl: argv.ttl * 1000,
                         fsq_dir: fsq_dir,
-                        multicast_address: '230.185.192.108',
-                        multicast_port: 8088
+                        disruptor: argv.disruptor
                     })).toString('hex'),
                     child;
                     

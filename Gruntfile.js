@@ -61,7 +61,7 @@ module.exports = function (grunt)
             },
 
             bench: {
-                cmd: './node_modules/.bin/bench -c 1 -i "$(echo bench/implementations/*.js | tr " " ,)" --data "' + new Buffer(JSON.stringify(process.argv.slice(3))).toString('hex') + '"'
+                cmd: 'node --napi-modules ./node_modules/.bin/bench -c 1 -i "$(echo bench/implementations/*.js | tr " " ,)" --data "' + new Buffer(JSON.stringify(process.argv.slice(3))).toString('hex') + '"'
             },
 
             diagrams: {
