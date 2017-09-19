@@ -11,13 +11,14 @@ var options = JSON.parse(new Buffer(process.argv[2], 'hex')),
     QlobberFSQ = require('../../..').QlobberFSQ,
     fsq = new QlobberFSQ(options),
     payload = crypto.randomBytes(options.size),
-    expected = 0;
+    expected = 0,
+    published = false;
 
 function handler()
 {
     expected -= 1;
 
-    if (expected === 0)
+    if ((expected === 0) && published)
     {
         process.exit();
     }
@@ -74,6 +75,7 @@ process.on('message', function (msg)
         }, cb);
     }, function ()
     {
+        published = true;
         if (expected === 0)
         {
             process.exit();
