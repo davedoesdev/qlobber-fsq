@@ -241,6 +241,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 - <a name="toc_qlobberfsqeventserrorerr"></a>[QlobberFSQ.events.error](#qlobberfsqeventserrorerr)
 - <a name="toc_qlobberfsqeventswarningerr"></a>[QlobberFSQ.events.warning](#qlobberfsqeventswarningerr)
 - <a name="toc_qlobberfsqeventssingle_disablederr"></a>[QlobberFSQ.events.single_disabled](#qlobberfsqeventssingle_disablederr)
+- <a name="toc_qlobberfsqeventsgetdents_disablederr"></a>[QlobberFSQ.events.getdents_disabled](#qlobberfsqeventsgetdents_disablederr)
 
 ## QlobberFSQ([options])
 
@@ -471,6 +472,18 @@ A `start` event won't be fired after a [`stop`](#qlobberfsqeventsstop) event.
 **Parameters:**
 
 - `{Object} err` The error that caused single-subscriber messages not to be supported.
+
+<sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.events](#toc_qlobberfsqevents)</sub>
+
+## QlobberFSQ.events.getdents_disabled(err)
+
+> `getdents_disabled` event
+
+`QlobberFSQ` objects fire a `getdents_disabled` event if they can't support enumerating bucket directories using [`getdents`](https://github.com/davedoesdev/getdents).
+
+**Parameters:**
+
+- `{Object} err` The error that caused `getdents` to be unavailable.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.events](#toc_qlobberfsqevents)</sub>
 
