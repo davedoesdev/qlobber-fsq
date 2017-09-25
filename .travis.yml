@@ -10,10 +10,10 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - socat
-      - g++-4.8
+      - g++-6
 env:
   global:
-    - CXX=g++-4.8
+    - CXX=g++-6
   matrix:
     - TARGET=test
     - TARGET=test-stress
