@@ -28,4 +28,5 @@ before_install:
   - mv ~/.bashrc.new ~/.bashrc
   - nvm alias default "$(node --version)"
   - ssh localhost node --version
-script: npm run travis-$TARGET
+script:
+  - npm run travis-$TARGET-$(node --version | grep -oE '[0-9]+' | head -1)

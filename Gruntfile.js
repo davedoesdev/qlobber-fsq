@@ -1,19 +1,28 @@
 /*jslint node: true */
 "use strict";
 
-var fsq_dir_index = process.argv.indexOf('--fsq-dir');
+function arg_or_length(s)
+{
+    for (var i = 0; i < process.argv.length; i += 1)
+    {
+        if (process.argv[i].lastIndexOf(s, 0) === 0)
+        {
+            return i;
+        }
+    }
+
+    return process.argv.length;
+}
+
+var index = process.argv.indexOf('--napi-modules'),
+    args = index < 0 ? '' : process.argv.slice(index).join(' ');
 
 module.exports = function (grunt)
 {
     grunt.initConfig(
     {
-        jshint: {
-            all: {
-                src: [ 'Gruntfile.js', 'index.js', 'lib/*.js', 'test/**/*.js', 'bench/**/*.js' ],
-                options: {
-                    esversion: 6
-                }
-            }
+        eslint: {
+            target: [ 'Gruntfile.js', 'index.js', 'lib/*.js', 'test/**/*.js', 'bench/**/*.js' ]
         },
 
         mochaTest: {
@@ -45,7 +54,8 @@ module.exports = function (grunt)
 
         exec: {
             cover: {
-                cmd: "./node_modules/.bin/nyc -x Gruntfile.js -x 'test/**' ./node_modules/.bin/grunt test " + (fsq_dir_index < 0 ? '' : process.argv.slice(fsq_dir_index).join(' '))
+                // --napi-modules --harmony-async-iteration should be last
+                cmd: "./node_modules/.bin/nyc -x Gruntfile.js -x 'test/**' node " + args + " ./node_modules/.bin/grunt test " + process.argv.slice(3).join(' ')
             },
 
             cover_report: {
@@ -61,7 +71,8 @@ module.exports = function (grunt)
             },
 
             bench: {
-                cmd: './node_modules/.bin/bench -c 1 -i "$(echo bench/implementations/*.js | tr " " ,)" --data "' + new Buffer(JSON.stringify(process.argv.slice(3))).toString('hex') + '"'
+                // --napi-modules --harmony-async-iteration should be last
+                cmd: 'node ' + args + ' ./node_modules/.bin/bench -c 1 -i "$(echo bench/implementations/*.js | tr " " ,)" --data "' + new Buffer(JSON.stringify(process.argv.slice(3))).toString('hex') + '"'
             },
 
             diagrams: {
@@ -70,12 +81,12 @@ module.exports = function (grunt)
         }
     });
     
-    grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-apidox');
     grunt.loadNpmTasks('grunt-exec');
 
-    grunt.registerTask('lint', 'jshint');
+    grunt.registerTask('lint', 'eslint');
     grunt.registerTask('test', 'mochaTest:default');
     grunt.registerTask('test-stress', 'mochaTest:stress');
     grunt.registerTask('test-multi', 'mochaTest:multi');

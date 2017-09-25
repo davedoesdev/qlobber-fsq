@@ -291,6 +291,8 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{String} wildcard_some` The character to use for matching zero or more words in a message topic to a subscriber. Defaults to `#`.
 
+  - `{Integer} getdents_size` If positive, use [`getdents`](https://github.com/davedoesdev/getdents) to enumerate messages in bucket directories. `getdents_size` is the buffer size to use with `getdents`. Otherwise, use [`fs.readdir`](https://nodejs.org/api/fs.html#fs_fs_readdir_path_options_callback) (which is the default). If `getdents` is requested but unavailable, a [`getdents_disabled`](#qlobberfsqeventsgetdents_disablederr) event will be emitted.
+
   - `{Function (info, handlers, cb(err, ready, filtered_handlers)) | Array} filter` Function called before each message is processed.
 
     - You can use this to filter the subscribed handler functions to be called for the message (by passing the filtered list as the third argument to `cb`).

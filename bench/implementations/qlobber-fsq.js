@@ -65,6 +65,7 @@ before(function (times, done)
                         rounds: argv.rounds,
                         size: argv.size,
                         ttl: argv.ttl * 1000,
+                        getdents_size: argv.getdents_size,
                         fsq_dir: fsq_dir
                     })).toString('hex'),
                     child;

@@ -20,7 +20,8 @@
          retry_interval: false,
          util: false,
          single_supported: false,
-         os: false */
+         os: false,
+         argv: false*/
 /*jslint node: true, nomen: true, bitwise: true, todo: true */
 "use strict";
 
@@ -44,9 +45,36 @@ function read_all(s, cb)
     });
 }
 
-describe('qlobber-fsq', function ()
+function test(getdents_size)
+{
+describe('qlobber-fsq (getdents_size=' + getdents_size + ')', function ()
 {
     this.timeout(60 * 1000);
+
+    if (getdents_size > 0)
+    {
+        beforeEach(function (cb)
+        {
+            fsq.stop_watching(function ()
+            {
+                fsq = new QlobberFSQ(
+                {
+                    fsq_dir: fsq_dir,
+                    flags: flags,
+                    retry_interval: retry_interval,
+                    getdents_size: getdents_size
+                });
+
+                fsq.on('getdents_disabled', function (err)
+                {
+                    cb(err);
+                });
+
+                ignore_ebusy(fsq);
+                fsq.on('start', cb);
+            });
+        });
+    }
 
     var orig_ftruncate = fs.ftruncate,
         orig_rename = fs.rename,
@@ -2469,7 +2497,7 @@ describe('qlobber-fsq', function ()
                     }
                     else if (count > num)
                     {
-                        throw "called too many times";
+                        throw new Error("called too many times");
                     }
                 });
                 /*jslint unparam: false */
@@ -2744,7 +2772,7 @@ describe('qlobber-fsq', function ()
             {
                 if (fs !== 'fs')
                 {
-                    throw 'dummy';
+                    throw new Error('dummy');
                 }
 
                 return require(fs);
@@ -2753,7 +2781,31 @@ describe('qlobber-fsq', function ()
             fsq2.on('single_disabled', function (err)
             {
                 expect(this._do_single).to.equal(false);
-                expect(err).to.equal('dummy');
+                expect(err.message).to.equal('dummy');
+                fsq2.stop_watching(done);
+            });
+        });
+    });
+
+    it('should emit event when getdents is not available', function (done)
+    {
+        fsq.stop_watching(function ()
+        {
+            var fsq2 = new QlobberFSQ(
+            {
+                fsq_dir: fsq_dir,
+                flags: flags,
+                getdents_size: 1024
+            });
+
+            fsq2._require_getdents = function ()
+            {
+                throw new Error('dummy');
+            };
+
+            fsq2.on('getdents_disabled', function (err)
+            {
+                expect(err.message).to.equal('dummy');
                 fsq2.stop_watching(done);
             });
         });
@@ -3605,3 +3657,11 @@ describe('qlobber-fsq', function ()
         });
     });
 });
+}
+
+test();
+
+if (argv.getdents_size > 0)
+{
+    test(argv.getdents_size);
+}

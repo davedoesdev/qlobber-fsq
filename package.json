@@ -1,7 +1,7 @@
 {
   "name": "qlobber-fsq",
   "description": "Shared file system queue. Supports pub-sub, work queues, wildcards, multi-process and distributed use.",
-  "version": "8.0.1",
+  "version": "8.1.0",
   "homepage": "https://github.com/davedoesdev/qlobber-fsq",
   "author": {
     "name": "David Halls",
@@ -19,10 +19,18 @@
   "main": "index.js",
   "scripts": {
     "test": "grunt lint test",
-    "travis-test": "grunt lint test coverage coveralls",
-    "travis-test-stress": "grunt test-stress",
-    "travis-test-multi": "grunt test-multi",
-    "travis-test-multi-remote": "grunt test-multi --remote=localhost"
+    "travis-test-4": "grunt lint test",
+    "travis-test-6": "grunt lint test",
+    "travis-test-8": "grunt lint && grunt coverage --getdents_size=1024 --napi-modules --harmony-async-iteration && grunt coveralls",
+    "travis-test-stress-4": "grunt test-stress",
+    "travis-test-stress-6": "grunt test-stress",
+    "travis-test-stress-8": "grunt test-stress",
+    "travis-test-multi-4": "grunt test-multi",
+    "travis-test-multi-6": "grunt test-multi",
+    "travis-test-multi-8": "grunt test-multi",
+    "travis-test-multi-remote-4": "grunt test-multi --remote=localhost",
+    "travis-test-multi-remote-6": "grunt test-multi --remote=localhost",
+    "travis-test-multi-remote-8": "grunt test-multi --remote=localhost"
   },
   "directories": {
     "test": "test",
@@ -48,11 +56,12 @@
     "wu": "~2.1.0"
   },
   "optionalDependencies": {
-    "fs-ext": "~0.6.0"
+    "fs-ext": "~0.6.0",
+    "getdents": "0.0.1"
   },
   "devDependencies": {
     "grunt": "~1.0.1",
-    "grunt-contrib-jshint": "~1.1.0",
+    "grunt-eslint": "~20.1.0",
     "grunt-mocha-test": "~0.13.2",
     "grunt-apidox": "~0.1.10",
     "grunt-exec": "~3.0.0",
@@ -64,7 +73,8 @@
     "rimraf": "~2.6.2",
     "lsof": "~0.1.0",
     "yargs": "~9.0.1",
-    "cp-remote": "~0.1.3"
+    "cp-remote": "~0.1.3",
+    "babel-eslint": "^8.0.0"
   },
   "engines": {
     "node": ">=4"

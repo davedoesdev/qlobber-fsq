@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for qlobber-fsq/lib/process_all_getdents.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">All files</a> / <a href="index.html">qlobber-fsq/lib</a> process_all_getdents.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">97.5% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>39/40</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>9/9</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>4/4</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">97.5% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>39/40</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">89x</span>
+<span class="cline-any cline-yes">89x</span>
+<span class="cline-any cline-yes">89x</span>
+<span class="cline-any cline-yes">89x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">89x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">22784x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">89x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">32054x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25244x</span>
+<span class="cline-any cline-yes">25244x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6801x</span>
+<span class="cline-any cline-yes">6801x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">57315x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6809x</span>
+<span class="cline-any cline-yes">6809x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-yes">25253x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const util = require('util'),
+	  path = require('path'),
+	  async = require('async'),
+	  Getdents = require('getdents').Getdents;
+&nbsp;
+module.exports = function (size, num_buckets, caches, pending, make_fname_handler)
+{
+    const ths = this,
+		  bucket_getdents = [],
+    	  popen = util.promisify(this._fs.open),
+     	  pclose = util.promisify(this._fs.close);
+&nbsp;
+    for (let count = 0; count &lt; num_buckets; count += 1)
+    {
+        bucket_getdents[count] = new Getdents(size);
+    }
+&nbsp;
+    return async function (bucket, extra_matcher, cb)
+    {
+        let bucket_fmt = ths._format_bucket(bucket),
+            cache = caches.get(bucket),
+            cache2 = new Map(),
+            pending2 = [];
+&nbsp;
+        cache2.bucket_fmt = bucket_fmt;
+        caches.set(bucket, cache2);
+        pending.set(bucket, pending2);
+&nbsp;
+        let queue = async.queue(make_fname_handler(cache,
+                                                   cache2,
+                                                   pending2,
+                                                   extra_matcher),
+                                ths._message_concurrency);
+&nbsp;
+        let called = false;
+        let done = false;
+        let count = 0;
+&nbsp;
+        function check(err)
+        {
+            if ((ths._error(err) ||
+                 (done &amp;&amp; (count === 0))) &amp;&amp;
+                !ths._chkstop() &amp;&amp;
+                !called)
+            {
+                called = true;
+                cb();
+            }
+        }
+&nbsp;
+        function processed()
+        {
+            count--;
+            check();
+        }
+&nbsp;
+        try
+        {
+            let fd = await popen(ths._msg_dir + path.sep + bucket_fmt, 'r');
+&nbsp;
+            try
+            {
+                let getdents = bucket_getdents[bucket];
+                getdents.reset(fd);
+&nbsp;
+                for await (let _ of getdents)
+                {
+                    if (getdents.type !== Getdents.DT_DIR)
+                    {
+                        count++;
+                        queue.push(getdents.name, processed);
+                    }
+                }
+            }
+            finally
+            {
+                await pclose(fd);
+                done = true;
+                check();
+            }
+        }
+        catch (err)
+        {
+<span class="cstat-no" title="statement not covered" >            check(err);</span>
+        }
+    }
+};
+&nbsp;
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Mon Sep 25 2017 20:50:43 GMT+0100 (BST)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>
