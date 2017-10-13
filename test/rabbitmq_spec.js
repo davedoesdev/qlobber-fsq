@@ -423,8 +423,8 @@ function MPFSQBase(child)
     /*jslint unparam: true */
     child.on('exit', function (code, signal)
     {
+         ths.emit('stop');
         //console.log('exit', ths._host, code, signal);
-        return undefined;
     });
     /*jslint unparam: false */
 
@@ -442,7 +442,6 @@ function MPFSQBase(child)
         else if (msg.type === 'stop')
         {
             child.send({ type: 'exit' });
-            ths.emit('stop');
         }
         else if (msg.type === 'received')
         {
