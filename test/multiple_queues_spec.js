@@ -15,8 +15,16 @@
 /*jslint node: true */
 "use strict";
 
-describe('multiple queues', function ()
+function multiple_queues(use_disruptor)
 {
+describe('multiple queues (use_disruptor=' + use_disruptor + ')', function ()
+{
+    var Disruptor;
+    if (use_disruptor)
+    {
+        Disruptor = require('shared-memory-disruptor').Disruptor;
+    }
+
     var interval_handle;
 
     beforeEach(function ()
@@ -50,10 +58,50 @@ describe('multiple queues', function ()
             fsq.stop_watching(function ()
             {
                 /*jslint unparam: true */
-                async.times(num_queues, function (n, cb)
+                async.timesSeries(num_queues, function (n, cb)
                 {
-                    var fsq = new QlobberFSQ({ fsq_dir: fsq_dir, flags: flags }),
-                        qcount = 0;
+                    var num_disruptors;
+
+                    function get_disruptor(bucket)
+                    {
+                        if (bucket < num_disruptors)
+                        {
+                            return new Disruptor('/test' + bucket,
+                                                 20 * 1024,
+                                                 20 * 1024,
+                                                 num_queues,
+                                                 n,
+                                                 false,
+                                                 false);
+                        }
+
+                        return null;
+                    }
+
+                    var fsq = new QlobberFSQ(
+                    {
+                        fsq_dir: fsq_dir,
+                        flags: flags,
+                        get_disruptor: use_disruptor ? get_disruptor : undefined,
+                        bucket_stamp_size: use_disruptor ? 0 : undefined
+                    }),
+                    qcount = 0,
+                    num_disruptors = Math.min(num_queues, fsq.num_buckets);
+
+                    if (use_disruptor && (n === 0))
+                    {
+                        for (var i = 0; i < num_disruptors; i += 1)
+                        {
+                            var d = new Disruptor('/test' + i,
+                                                  20 * 1024,
+                                                  20 * 1024,
+                                                  num_queues,
+                                                  0,
+                                                  true,
+                                                  false);
+                            d.release();
+                        }
+                    }
 
                     fsq.subscribe('foo', function (data, info, cb)
                     {
@@ -126,14 +174,7 @@ describe('multiple queues', function ()
 
                     expect(fsqs.length).to.equal(num_queues);
 
-                    var messages = [], i;
-
-                    for (i = 0; i < num_messages; i += 1)
-                    {
-                        messages[i] = i;
-                    }
-
-                    async.eachLimit(messages, 50, function (n, cb)
+                    async.timesLimit(num_messages, 50, function (n, cb)
                     {
                         var single = typeof get_single === 'boolean' ? get_single : get_single(),
                             data = crypto.randomBytes(Math.round(Math.random() * max_message_size)),
@@ -150,10 +191,18 @@ describe('multiple queues', function ()
                             expected_checksum += check * num_queues;
                         }
 
-                        fsqs[Math.floor(Math.random() * num_queues)].publish(
+                        var q = Math.floor(Math.random() * num_queues);
+
+                        fsqs[q].publish(
                                 'foo',
                                 data,
-                                { ttl: timeout, single: single, encoding: null },
+                                {
+                                    ttl: timeout,
+                                    single: single,
+                                    encoding: null,
+                                    ephemeral: true,
+                                    bucket: use_disruptor ? (q % fsqs[q].num_buckets) : undefined
+                                },
                                 cb);
                     }, function (err)
                     {
@@ -207,3 +256,6 @@ describe('multiple queues', function ()
     publish_to_queues3(10, 100 * 1024);
     publish_to_queues3(50, 20 * 1024);
 });
+}
+
+multiple_queues(argv.disruptor);

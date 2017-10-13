@@ -1,19 +1,6 @@
 /*jslint node: true */
 "use strict";
 
-function arg_or_length(s)
-{
-    for (var i = 0; i < process.argv.length; i += 1)
-    {
-        if (process.argv[i].lastIndexOf(s, 0) === 0)
-        {
-            return i;
-        }
-    }
-
-    return process.argv.length;
-}
-
 var index = process.argv.indexOf('--napi-modules'),
     args = index < 0 ? '' : process.argv.slice(index).join(' ');
 
@@ -36,6 +23,9 @@ module.exports = function (grunt)
                 src: ['test/common.js',
                       'test/rabbitmq_bindings.js',
                       'test/rabbitmq_spec.js']
+            },
+            options: {
+                bail: true
             }
         },
 

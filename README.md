@@ -2,6 +2,7 @@
 
 Shared file system queue for Node.js.
 
+- **Note:** Version 9 can use [shared memory LMAX Disruptors](https://github.com/davedoesdev/shared-memory-disruptor) to speed things up on a single multi-core server.
 - Supports pub-sub and work queues.
 - Supports local file system for multi-core use.
 - Tested with [FraunhoferFS (BeeGFS)](http://www.fhgfs.com/) and [CephFS](http://ceph.com/ceph-storage/file-system/) for distributed use.
@@ -149,21 +150,25 @@ If the filename indicates the message can be read by only one subscriber (i.e. w
 To run the default tests:
 
 ```shell
-grunt test [--fsq-dir=<path>]
+grunt test [--fsq-dir=<path>] [--getdents_size=<buffer size>] [--disruptor]
 ```
 
 If you don't specify `--fsq-dir` then the default will be used (a directory named `fsq` in the `test` directory).
 
+If you specify `--getdents_size` then use of [`getdents`](https://github.com/davedoesdev/getdents) will be included in the tests.
+
+If you specify `--disruptor` then use of [shared memory LMAX Disruptors](https://github.com/davedoesdev/shared-memory-disruptor) will be included in the tests.
+
 To run the stress tests (multiple queues in a single Node process):
 
 ```shell
-grunt test-stress [--fsq-dir=<path>]
+grunt test-stress [--fsq-dir=<path>] [--disruptor]
 ```
 
 To run the multi-process tests (each process publishing and subscribing to different messages):
 
 ```shell
-grunt test-multi [--fsq-dir=<path>] [--queues=<number of queues>]
+grunt test-multi [--fsq-dir=<path>] [--queues=<number of queues>] [--disruptor]
 ```
 
 If you omit `--queues` then one process will be created per core (detected with [`os.cpus()`](http://nodejs.org/api/os.html#os_os_cpus)).
@@ -206,6 +211,13 @@ grunt bench [--fsq-dir=<path>] \
             --rounds=<number of rounds> \
             --size=<message size> \
             --ttl=<message time-to-live in seconds> \
+            [--disruptor] \
+            [--num_elements=<number of disruptor elements>] \
+            [--element_size=<disruptor element size>] \
+            [--bucket_stamp_size=<number of bytes to write to UPDATE file] \
+            [--getdents_size=<buffer size>] \
+            [--ephemeral] \
+            [--refresh_ttl=<period between expiration check in seconds>] \
             (--queues=<number of queues> | \
              --remote=<host1> --remote=<host2> ...)
 ```
@@ -234,6 +246,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 - <a name="toc_qlobberfsqprototypestop_watchingcb"></a>[QlobberFSQ.prototype.stop_watching](#qlobberfsqprototypestop_watchingcb)
 - <a name="toc_qlobberfsqprototyperefresh_now"></a>[QlobberFSQ.prototype.refresh_now](#qlobberfsqprototyperefresh_now)
 - <a name="toc_qlobberfsqprototypeforce_refresh"></a>[QlobberFSQ.prototype.force_refresh](#qlobberfsqprototypeforce_refresh)
+- <a name="toc_qlobberfsqget_num_bucketsbucket_base-bucket_num_chars"></a>[QlobberFSQ.get_num_buckets](#qlobberfsqget_num_bucketsbucket_base-bucket_num_chars)
 
 ## Events
 - <a name="toc_qlobberfsqeventsstart"></a><a name="toc_qlobberfsqevents"></a>[QlobberFSQ.events.start](#qlobberfsqeventsstart)
@@ -256,9 +269,9 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
   - `{Integer} split_topic_at` Maximum number of characters in a short topic. Short topics are contained entirely in a message's filename. Long topics are split so the first `split_topic_at` characters go in the filename and the rest are written to a separate file in the `topics` sub-directory. Obviously long topics are less efficient. Defaults to 200, which is the maximum for most common file systems. Note: if your `fsq_dir` is on an [`ecryptfs`](http://ecryptfs.org/) file system then you should set `split_topic_at` to 100.
 
-  - `{Integer} bucket_base`, `{Integer} bucket_num_chars` Messages are distributed across different _buckets_ for efficiency. Each bucket is a sub-directory of the `messages` directory. The number of buckets is determined by the `bucket_base` and `bucket_num_chars` options. `bucket_base` is the radix to use for bucket names and `bucket_num_chars` is the number of digits in each name. For example, `bucket_base: 26` and `bucket_num_chars: 4` results in buckets `0000` through `pppp`. Defaults to `base_base: 16` and `bucket_num_chars: 2` (i.e. buckets `00` through `ff`).
+  - `{Integer} bucket_base`, `{Integer} bucket_num_chars` Messages are distributed across different _buckets_ for efficiency. Each bucket is a sub-directory of the `messages` directory. The number of buckets is determined by the `bucket_base` and `bucket_num_chars` options. `bucket_base` is the radix to use for bucket names and `bucket_num_chars` is the number of digits in each name. For example, `bucket_base: 26` and `bucket_num_chars: 4` results in buckets `0000` through `pppp`. Defaults to `base_base: 16` and `bucket_num_chars: 2` (i.e. buckets `00` through `ff`). The number of buckets is available as the `num_buckets` property of the `QlobberFSQ` object.
 
-  - `{Integer} bucket_stamp_size` The number of bytes to write to the `UPDATE` file when a message is published. The `UPDATE` file (in the `update` directory) is used to determine whether any messages have been published without having to scan all the bucket directories. Each bucket has a section in the `UPDATE` file, `bucket_stamp_size` bytes long. When a message is written to a bucket, its section is filled with random bytes. Defaults to 32.
+  - `{Integer} bucket_stamp_size` The number of bytes to write to the `UPDATE` file when a message is published. The `UPDATE` file (in the `update` directory) is used to determine whether any messages have been published without having to scan all the bucket directories. Each bucket has a section in the `UPDATE` file, `bucket_stamp_size` bytes long. When a message is written to a bucket, its section is filled with random bytes. Defaults to 32. If you set this to 0, the `UPDATE` file won't be written to and all the bucket directories will be scanned even if no messages have been published.
 
   - `{Integer} flags` Extra flags to use when reading and writing files. You shouldn't need to use this option but if you do then it should be a bitwise-or of values in the (undocumented) Node `constants` module (e.g. `constants.O_DIRECT | constants.O_SYNC`). Defaults to 0.
 
@@ -308,6 +321,12 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
     - You can supply an array of filter functions - each will be called in turn with the `filtered_handlers` from the previous one.
 
     - An array containing the filter functions is also available as the `filters` property of the `QlobberFSQ` object and can be modified at any time.
+
+  - `{Function (bucket)} get_disruptor` You can speed up message processing on a single multi-core server by using [shared memory LMAX Disruptors](https://github.com/davedoesdev/shared-memory-disruptor). Message metadata and (if it fits) payload will be send through the Disruptor. `get_disruptor` will be called for each bucket number and should return the Disruptor to use for that bucket or `null`. The same bucket can be used for more than one bucket if you wish.
+
+  - `{Integer} refresh_ttl` If you use a shared memory LMAX Disruptor for a bucket (see `get_disruptor` above), notification of new messages in the bucket is received through the Disruptor. However, checking for expired messages still needs to read the filesystem. `refresh_ttl` is the time (in milliseconds) between checking for expired messages when a Disruptor is in use. Defaults to 10 seconds.
+
+  - `{Integer} disruptor_spin_interval` If a Disruptor is shared across multiple buckets or multiple `QlobberFSQ` instances, contention can occur when publishing a message. In this case [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb) will try again until it succeeds. `disruptor_spin_interval` is the time (in milliseconds) to wait before retrying. Defaults to 0.
 
 <sub>Go: [TOC](#tableofcontents)</sub>
 
@@ -385,6 +404,14 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
     - `{String|Buffer} payload` Message payload.
     - `{Object} options` The optional settings for this publication.
 
+  - `{Integer} bucket` Which bucket to write the message into, instead of using `hasher` to calculate it.
+
+  - `{Boolean} ephemeral` This applies only if a shared memory LMAX Disruptor is being used for the message's bucket (see the `get_disruptor` option to the [`QlobberFSQ constructor`](#qlobberfsqoptions)). By default, the message is written both to the Disruptor and the filesystem. If `ephemeral` is truthy, the message is written only to the Disruptor.
+  
+    If the Disruptor's elements aren't large enough to contain the message's metadata, the message won't be written  to the Disruptor and `cb` (below) will receive an error with a property `code` equal to the string `buffer-too-small`.
+    
+    However, if the Disruptor's elements aren't large enough for the message's payload, the message _will_ be written to disk. The amount of space availabe in the Disruptor for the payload can be found via the `ephemeral_size` property on the stream returned by this function. If your message won't fit and you don't want to write it to disk, emit an `error` event on the stream without ending it.
+    
 - `{Function} [cb]` Optional function to call once the message has been written to the file system queue. This will be called after the message has been moved into its bucket and is therefore available to subscribers in any `QlobberFSQ` object scanning the queue. It will be passed the following arguments: 
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
@@ -418,6 +445,22 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 > Scan for new messages in the `messages` sub-directory without checking whether the `UPDATE` file has changed.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
+
+## QlobberFSQ.get_num_buckets(bucket_base, bucket_num_chars)
+
+> Given a radix to use for characters in bucket names and the number of digits in
+each name, return the number of buckets that can be represented.
+
+**Parameters:**
+
+- `{Integer} bucket_base` Radix for bucket name characters. 
+- `{Integer} bucket_num_chars` Number of characters in bucket names. 
+
+**Return:**
+
+`{Integer}` The number of buckets that can be represented.
+
+<sub>Go: [TOC](#tableofcontents) | [QlobberFSQ](#toc_qlobberfsq)</sub>
 
 <a name="qlobberfsqevents"></a>
 

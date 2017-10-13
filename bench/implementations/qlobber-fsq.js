@@ -9,10 +9,15 @@ var child_process = require('child_process'),
     async = require('async'),
     rimraf = require('rimraf'),
     yargs = require('yargs'),
+    QlobberFSQ = require('../..').QlobberFSQ,
+    num_buckets = QlobberFSQ.get_num_buckets(),
     argv = yargs(JSON.parse(new Buffer(yargs.argv.data, 'hex')))
             .demand('rounds')
             .demand('size')
             .demand('ttl')
+            .option('num_elements', { default: 20 * 1024 })
+            .option('element_size', { default: 2048 })
+            .option('bucket_stamp_size', { default: 32 })
             .check(function (argv)
             {
                 if (!(argv.queues || argv.remote))
@@ -56,17 +61,44 @@ before(function (times, done)
         },
         function (cb)
         {
+            if (argv.disruptor)
+            {
+                var Disruptor = require('shared-memory-disruptor').Disruptor;
+
+                for (var i = 0; i < Math.min(argv.queues, num_buckets); i += 1)
+                {
+                    var d = new Disruptor('/test' + i,
+                                          argv.num_elements,
+                                          argv.element_size,
+                                          argv.queues,
+                                          0,
+                                          true,
+                                          false);
+                    d.release();
+                }
+            }
+            cb();
+        },
+        function (cb)
+        {
             async.times(argv.queues, function (n, cb)
             {
                 var bench_fsq = path.join(__dirname, 'bench-fsq', 'bench-fsq.js'),
                     opts = new Buffer(JSON.stringify({
+                        fsq_dir: fsq_dir,
                         n: n,
                         queues: argv.queues,
+                        num_buckets: num_buckets,
+                        num_elements: argv.num_elements,
+                        element_size: argv.element_size,
                         rounds: argv.rounds,
                         size: argv.size,
                         ttl: argv.ttl * 1000,
                         getdents_size: argv.getdents_size,
-                        fsq_dir: fsq_dir
+                        disruptor: argv.disruptor,
+                        bucket_stamp_size: argv.bucket_stamp_size,
+                        ephemeral: argv.ephemeral,
+                        refresh_ttl: argv.refresh_ttl === undefined ? undefined : argv.refresh_ttl * 1000
                     })).toString('hex'),
                     child;
                     

@@ -51,6 +51,14 @@ global.msg_dir = path.join(fsq_dir, 'messages');
 global.flags = 0;
 global.retry_interval = 5;
 
+global.default_options = {
+    fsq_dir: fsq_dir,
+    flags: flags,
+    retry_interval: retry_interval
+};
+
+var counters_before;
+
 if (argv.direct)
 {
     global.flags |= constants.O_DIRECT;
@@ -107,21 +115,29 @@ beforeEach(function (done)
         },
         function (cb)
         {
-            fsq = new QlobberFSQ(
-            {
-                fsq_dir: fsq_dir,
-                flags: flags,
-                retry_interval: retry_interval
-            });
-
+            fsq = new QlobberFSQ(default_options);
             ignore_ebusy(fsq);
-            fsq.on('start', cb);
+            fsq.on('start', function ()
+            {
+                lsof.counters(function (counters)
+                {
+                    counters_before = counters;
+                    cb();
+                });
+            });
         }], done);
 });
 
 afterEach(function (done)
 {
-    fsq.stop_watching(done);
+    fsq.stop_watching(function ()
+    {
+        lsof.counters(function (counters)
+        {
+            expect(counters).to.eql(counters_before);
+            done();
+        });
+    });
 });
 
 global.check_empty = function (dir, done, cb)

@@ -3,13 +3,37 @@
 
 var options = JSON.parse(new Buffer(process.argv[2], 'hex')),
     QlobberFSQ = require('../..').QlobberFSQ,
-    fsq = new QlobberFSQ(options),
     cbs = {},
     cb_count = 0,
     handlers = {},
     host = require('os').hostname();
 
 //console.log(options);
+
+if (options.disruptor)
+{
+    var Disruptor = require('shared-memory-disruptor').Disruptor;
+
+    options.get_disruptor = function (bucket)
+    {
+        if (bucket < Math.min(options.total, options.num_buckets))
+        {
+            return new Disruptor('/test' + bucket,
+                                 options.num_elements,
+                                 options.element_size,
+                                 options.total,
+                                 options.index,
+                                 false,
+                                 false);
+        }
+
+        return null;
+    };
+
+    options.bucket_stamp_size = 0;
+}
+
+var fsq = new QlobberFSQ(options);
 
 //console.log('run', host, process.pid);
 
@@ -80,6 +104,12 @@ process.on('message', function (msg)
     else if (msg.type === 'publish')
     {
         //console.log('publishing', host, process.pid, msg.topic, msg.options);
+
+        if (options.disruptor)
+        {
+            msg.options.bucket = options.index % options.num_buckets;
+            msg.options.ephemeral = true;
+        }
 
         fsq.publish(msg.topic, new Buffer(msg.payload, 'base64'), msg.options,
         function (err, fname)

@@ -36,7 +36,11 @@ function rabbitmq_tests(name, QCons, num_queues, rounds, msglen, retry_prob, exp
         {
             async.times(num_queues, function (n, cb)
             {
-                var fsq = new QCons({ fsq_dir: fsq_dir, flags: flags }, n);
+                var fsq = new QCons(
+                {
+                    fsq_dir: fsq_dir,
+                    flags: flags
+                }, num_queues, n);
 
                 fsq.on('start', function ()
                 {
@@ -306,6 +310,8 @@ function rabbitmq_tests(name, QCons, num_queues, rounds, msglen, retry_prob, exp
 
 function rabbitmq(prefix, QCons, queues, rounds, msglen, retry_prob)
 {
+    prefix += ', ';
+
     rabbitmq_tests(prefix + 'before_remove', QCons, queues, rounds, msglen, retry_prob, rabbitmq_expected_results_before_remove);
 
     rabbitmq_tests(prefix + 'after_remove', QCons, queues, rounds, msglen, retry_prob, rabbitmq_expected_results_after_remove,
@@ -595,20 +601,59 @@ function MPFSQBase(child)
 
 util.inherits(MPFSQBase, events.EventEmitter);
 
-function MPFSQ(options)
+function make_MPFSQ(use_disruptor)
 {
-    MPFSQBase.call(
-        this,
-        child_process.fork(path.join(__dirname, 'mpfsq', 'mpfsq.js'),
-                           [new Buffer(JSON.stringify(options)).toString('hex')]),
-        options);
-}
+    var Disruptor;
+    if (use_disruptor)
+    {
+        Disruptor = require('shared-memory-disruptor').Disruptor;
+    }
 
-util.inherits(MPFSQ, MPFSQBase);
+    function MPFSQ(options, total, index)
+    {
+        var num_buckets = QlobberFSQ.get_num_buckets(options.bucket_base,
+                                                     options.bucket_num_chars);
+
+        if (use_disruptor && (index === 0))
+        {
+            for (var i = 0; i < Math.min(total, num_buckets); i += 1)
+            {
+                var d = new Disruptor('/test' + i,
+                                      20 * 1024,
+                                      20 * 1024,
+                                      total,
+                                      0,
+                                      true,
+                                      false);
+                d.release();
+            }
+        }
+
+        options = Object.assign({}, options,
+        {
+            disruptor: use_disruptor,
+            num_elements: 20 * 1024,
+            element_size: 20 * 1024,
+            total: total,
+            index: index,
+            num_buckets: num_buckets
+        });
+
+        MPFSQBase.call(
+            this,
+            child_process.fork(path.join(__dirname, 'mpfsq', 'mpfsq.js'),
+                               [new Buffer(JSON.stringify(options)).toString('hex')]),
+            options);
+    }
+
+    util.inherits(MPFSQ, MPFSQBase);
+
+    return MPFSQ;
+}
 
 function make_RemoteMPFSQ(hosts)
 {
-    function RemoteMPFSQ(options, index)
+    function RemoteMPFSQ(options, total, index)
     {
         this._host = hosts[index];
 
@@ -630,7 +675,7 @@ describe('rabbit', function ()
     if (argv.remote)
     {
         var hosts = typeof argv.remote === 'string' ? [argv.remote] : argv.remote;
-        rabbitmq4('distributed ', make_RemoteMPFSQ(hosts), hosts.length);
+        rabbitmq4('distributed', make_RemoteMPFSQ(hosts), hosts.length);
     }
     else
     {
@@ -639,6 +684,7 @@ describe('rabbit', function ()
         rabbitmq4('', QlobberFSQ, 26);
         rabbitmq4('', QlobberFSQ, 100);*/
 
-        rabbitmq4('multi-process ', MPFSQ, argv.queues || os.cpus().length);
+        rabbitmq4('multi-process, disruptor=' + argv.disruptor,
+                  make_MPFSQ(argv.disruptor), argv.queues || os.cpus().length);
     }
 });

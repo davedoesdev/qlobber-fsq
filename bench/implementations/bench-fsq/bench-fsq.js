@@ -7,8 +7,30 @@ var async = require('async'),
     crypto = require('crypto');
 require('../../../test/rabbitmq_bindings.js');
 
-var options = JSON.parse(new Buffer(process.argv[2], 'hex')),
-    QlobberFSQ = require('../../..').QlobberFSQ,
+var options = JSON.parse(new Buffer(process.argv[2], 'hex'));
+
+if (options.disruptor)
+{
+    var Disruptor = require('shared-memory-disruptor').Disruptor;
+
+    options.get_disruptor = function (bucket)
+    {
+        if (bucket < Math.min(options.queues, options.num_buckets))
+        {
+            return new Disruptor('/test' + bucket,
+                                 options.num_elements,
+                                 options.element_size,
+                                 options.queues,
+                                 options.n,
+                                 false,
+                                 false);
+        }
+
+        return null;
+    };
+}
+
+var QlobberFSQ = require('../../..').QlobberFSQ,
     fsq = new QlobberFSQ(options),
     payload = crypto.randomBytes(options.size),
     expected = 0,
@@ -65,7 +87,11 @@ process.on('message', function (msg)
             {
                 fsq.publish(rabbitmq_expected_results_before_remove[i][0],
                             payload,
-                            { ttl: options.ttl },
+                            {
+                                ttl: options.ttl,
+                                bucket: options.disruptor ? (options.n % options.num_buckets) : undefined,
+                                ephemeral: options.ephemeral
+                            },
                             cb);
             }
             else
