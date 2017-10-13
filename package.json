@@ -58,8 +58,8 @@
   },
   "optionalDependencies": {
     "fs-ext": "~0.6.0",
-    "getdents": "0.0.1",
-    "shared-memory-disruptor": "^1.1.1"
+    "getdents": "^1.0.0",
+    "shared-memory-disruptor": "^2.0.0"
   },
   "devDependencies": {
     "grunt": "~1.0.1",
