@@ -35,4 +35,4 @@ before_install:
   - ssh localhost python --version
   - npm install fs-ext
 script:
-  - npm run travis-$TARGET-$(node --version | grep -oE '[0-9]+' | head -1)
+  - npm run ci-$TARGET-$(node --version | grep -oE '[0-9]+' | head -1)
