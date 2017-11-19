@@ -612,35 +612,33 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 expect(info.topic).to.equal('foo');
                 expect(data.toString('utf8')).to.equal('bar');
 
-                if (info.single)
+                cb(null, function (err)
                 {
-                    count_single += 1;
-                }
-                else
-                {
-                    count_multi += 1;
-                }
+                    if (info.single)
+                    {
+                        count_single += 1;
+                    }
+                    else
+                    {
+                        count_multi += 1;
+                    }
 
-                if ((count_single === (single_supported ? 1 : 0)) && 
-                    (count_multi === 2))
-                {
-                    cb(null, function (err)
+                    if ((count_single === (single_supported ? 1 : 0)) && 
+                        (count_multi === 2))
                     {
                         fsq2.stop_watching(function ()
                         {
                             done(err);
                         });
-                    });
-                }
-                else 
-                {
-                    if ((count_single > 1) || (count_multi > 2))
-                    {
-                        throw new Error('called too many times');
                     }
-
-                    cb();
-                }
+                    else 
+                    {
+                        if ((count_single > 1) || (count_multi > 2))
+                        {
+                            throw new Error('called too many times');
+                        }
+                    }
+                });
             }
 
             fsq2.on('start', function ()
@@ -1301,38 +1299,34 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 {
                     expect(data.toString('utf8')).to.equal('bar');
 
-                    if (info.single)
+                    cb(null, function (err)
                     {
-                        expect(got_single).to.equal(false);
-                        got_single = true;
-                    }
-                    else
-                    {
-                        expect(got_multi).to.equal(false);
-                        got_multi = true;
-                    }
-
-                    if (!single_supported)
-                    {
-                        expect(info.single).to.equal(false);
-                    }
-
-                    if (got_single && got_multi && ready_single && ready_multi)
-                    {
-                        expect(count).to.equal(single_supported ? 10 : 5);
-
-                        cb(null, function (err)
+                        if (info.single)
                         {
+                            expect(got_single).to.equal(false);
+                            got_single = true;
+                        }
+                        else
+                        {
+                            expect(got_multi).to.equal(false);
+                            got_multi = true;
+                        }
+
+                        if (!single_supported)
+                        {
+                            expect(info.single).to.equal(false);
+                        }
+
+                        if (got_single && got_multi && ready_single && ready_multi)
+                        {
+                            expect(count).to.equal(single_supported ? 10 : 5);
+
                             fsq2.stop_watching(function ()
                             {
                                 done(err);
                             });
-                        });
-                    }
-                    else
-                    {
-                        cb();
-                    }
+                        }
+                    });
                 }
 
                 fsq2.subscribe('foo', handler);
@@ -1631,31 +1625,32 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             /*jslint unparam: true */
             fsq2.subscribe('foo', function (data, info, cb)
             {
-                if (info.single)
+                cb(null, function ()
                 {
-                    got_single = true;
-                }
-                else
-                {
-                    got_multi = true;
-                }
-
-                if (got_single && got_multi)
-                {
-                    setTimeout(function ()
+                    if (info.single)
                     {
-                        fsq2.force_refresh();
+                        got_single = true;
+                    }
+                    else
+                    {
+                        got_multi = true;
+                    }
+
+                    if (got_single && got_multi)
+                    {
                         setTimeout(function ()
                         {
-                            check_empty(msg_dir, done, function ()
+                            fsq2.force_refresh();
+                            setTimeout(function ()
                             {
-                                fsq2.stop_watching(done);
-                            });
+                                check_empty(msg_dir, done, function ()
+                                {
+                                    fsq2.stop_watching(done);
+                                });
+                            }, 1000);
                         }, 1000);
-                    }, 1000);
-                }
-
-                cb();
+                    }
+                });
             });
             /*jslint unparam: false */
 
@@ -1685,28 +1680,26 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         /*jslint unparam: true */
         fsq.subscribe('foo', function (data, info, cb)
         {
-            if (info.single)
+            cb(null, function ()
             {
-                count_single += 1;
-            }
-            else
-            {
-                count_multi += 1;
-            }
+                if (info.single)
+                {
+                    count_single += 1;
+                }
+                else
+                {
+                    count_multi += 1;
+                }
 
-            if ((count_single === 2) && (count_multi === 2))
-            {
-                cb(null, done);
-            }
-            else
-            {
-                if ((count_single > 2) || (count_multi > 2))
+                if ((count_single === 2) && (count_multi === 2))
+                {
+                    done();
+                }
+                else if ((count_single > 2) || (count_multi > 2))
                 {
                     throw new Error('called too many times');
                 }
-
-                cb();
-            }
+            });
         });
         /*jslint unparam: false */
 
@@ -1849,20 +1842,21 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
                     expect(split.toString('utf8')).to.equal(new Buffer(topic).toString('hex').substr(fsq._split_topic_at));
 
-                    setTimeout(function ()
+                    cb(null, function ()
                     {
-                        fsq.force_refresh();
-
                         setTimeout(function ()
                         {
-                            check_empty(msg_dir, done, function ()
-                            {
-                                check_empty(topic_dir, done, done);
-                            });
-                        }, 500);
-                    }, 1000);
+                            fsq.force_refresh();
 
-                    cb();
+                            setTimeout(function ()
+                            {
+                                check_empty(msg_dir, done, function ()
+                                {
+                                    check_empty(topic_dir, done, done);
+                                });
+                            }, 500);
+                        }, 1000);
+                    });
                 });
             });
 
@@ -2031,17 +2025,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
         function handler(stream, info, cb)
         {
-            if (info.single)
-            {
-                expect(sub_single_called).to.equal(false);
-                sub_single_called = true;
-            }
-            else
-            {
-                expect(sub_multi_called).to.equal(false);
-                sub_multi_called = true;
-            }
-
             var hash = crypto.createHash('sha256'),
                 len = 0;
 
@@ -2061,15 +2044,25 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 expect(len).to.equal(1024 * 1024);
                 expect(hash.digest('hex')).to.equal('268e1a23a9da868b62b12e020061c98449568c4af9cf9070c8738fe1b457ed9c');
 
-                if (pub_multi_called && pub_single_called &&
-                    sub_multi_called && sub_single_called)
+                cb(null, function ()
                 {
-                    cb(null, done);
-                }
-                else
-                {
-                    cb();
-                }
+                    if (info.single)
+                    {
+                        expect(sub_single_called).to.equal(false);
+                        sub_single_called = true;
+                    }
+                    else
+                    {
+                        expect(sub_multi_called).to.equal(false);
+                        sub_multi_called = true;
+                    }
+
+                    if (pub_multi_called && pub_single_called &&
+                        sub_multi_called && sub_single_called)
+                    {
+                        done();
+                    }
+                });
             });
         }
 
@@ -3109,7 +3102,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             if (info.single)
             {
                 expect(rsingle).to.equal(false);
-                rsingle = true;
                 expect(info.topic).to.equal(ltopic);
                 expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
                 expect(info.fname.lastIndexOf(new Buffer(ltopic).toString('hex').substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
@@ -3118,12 +3110,10 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 var topic_dir = path.dirname(path.dirname(info.topic_path));
                 expect(topic_dir).to.equal(path.join(msg_dir, '..', 'topics'));
                 expect(fs.readFileSync(info.topic_path).toString('utf8')).to.equal(new Buffer(ltopic).toString('hex').substr(fsq._split_topic_at));
-                cb();
             }
             else
             {
                 expect(rmulti).to.equal(false);
-                rmulti = true;
                 expect(info.topic).to.equal('\0foo');
                 expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
                 expect(info.fname.lastIndexOf(new Buffer('\0foo').toString('hex') + '@', 0)).to.equal(0);
@@ -3131,10 +3121,22 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 expect(data.toString('utf8')).to.equal('bar');
             }
 
-            if (rsingle && rmulti)
+            cb(null, function ()
             {
-                this.stop_watching(done);
-            }
+                if (info.single)
+                {
+                    rsingle = true;
+                }
+                else
+                {
+                    rmulti = true;
+                }
+
+                if (rsingle && rmulti)
+                {
+                    fsq.stop_watching(done);
+                }
+            });
         });
 
         fsq.publish('\0foo', 'bar', function (err)
@@ -3196,7 +3198,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     if (info.single)
                     {
                         expect(rsingle).to.equal(false);
-                        rsingle = true;
                         expect(info.topic).to.equal(ltopic);
                         expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
                         expect(info.fname.lastIndexOf(ltopic.substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
@@ -3205,12 +3206,10 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                         var topic_dir = path.dirname(path.dirname(info.topic_path));
                         expect(topic_dir).to.equal(path.join(msg_dir, '..', 'topics'));
                         expect(fs.readFileSync(info.topic_path).toString('utf8')).to.equal(ltopic.substr(fsq._split_topic_at));
-                        cb();
                     }
                     else
                     {
                         expect(rmulti).to.equal(false);
-                        rmulti = true;
                         expect(info.topic).to.equal('foo');
                         expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
                         expect(info.fname.lastIndexOf('foo' + '@', 0)).to.equal(0);
@@ -3218,10 +3217,22 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                         expect(data.toString('utf8')).to.equal('bar');
                     }
 
-                    if (rsingle && rmulti)
+                    cb(null, function ()
                     {
-                        this.stop_watching(done);
-                    }
+                        if (info.single)
+                        {
+                            rsingle = true;
+                        }
+                        else
+                        {
+                            rmulti = true;
+                        }
+
+                        if (rsingle && rmulti)
+                        {
+                            fsq2.stop_watching(done);
+                        }
+                    });
                 });
 
                 this.publish('foo', 'bar', function (err)
