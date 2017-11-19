@@ -23,10 +23,16 @@ before_install:
   - ssh-keygen -t rsa -f ~/.ssh/id_rsa -N ''
   - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
   - ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
+  - echo PATH=\"$(dirname "$(which python)"):\$PATH\" > ~/.bashrc.new
   - echo . ~/.nvm/nvm.sh > ~/.bashrc.new
   - cat ~/.bashrc >> ~/.bashrc.new
   - mv ~/.bashrc.new ~/.bashrc
-  - nvm alias default "$(node --version)"
+  - cat ~/.bashrc
+  - nvm alias default "$(nvm current)"
   - ssh localhost node --version
+  - pyenv versions
+  - pyenv global "$PYVER"
+  - ssh localhost python --version
+  - npm install fs-ext
 script:
   - npm run travis-$TARGET-$(node --version | grep -oE '[0-9]+' | head -1)
