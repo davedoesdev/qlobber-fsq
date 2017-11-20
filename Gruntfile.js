@@ -2,7 +2,12 @@
 "use strict";
 
 var index = process.argv.indexOf('--napi-modules'),
-    args = index < 0 ? '' : process.argv.slice(index).join(' ');
+    args = index < 0 ? '' : process.argv.slice(index).join(' '),
+    path = require('path'),
+    bin_path = path.join('.', 'node_modules', '.bin'),
+    nyc_path = path.join(bin_path, 'nyc'),
+    grunt_path = path.join(bin_path, 'grunt'),
+    bench_path = path.join(bin_path, 'bench');
 
 module.exports = function (grunt)
 {
@@ -45,15 +50,15 @@ module.exports = function (grunt)
         exec: {
             cover: {
                 // --napi-modules --harmony-async-iteration should be last
-                cmd: "./node_modules/.bin/nyc -x Gruntfile.js -x 'test/**' node " + args + " ./node_modules/.bin/grunt test " + process.argv.slice(3).join(' ')
+                cmd: nyc_path + " -x Gruntfile.js -x 'test/**' node " + args + " " + grunt_path + " test " + process.argv.slice(3).join(' ')
             },
 
             cover_report: {
-                cmd: './node_modules/.bin/nyc report -r lcov'
+                cmd: nyc_path + ' report -r lcov'
             },
 
             cover_check: {
-                cmd: './node_modules/.bin/nyc check-coverage --statements 90 --branches 85 --functions 95 --lines 95'
+                cmd: nyc_path + ' check-coverage --statements 90 --branches 85 --functions 95 --lines 95'
             },
 
             coveralls: {
@@ -62,7 +67,7 @@ module.exports = function (grunt)
 
             bench: {
                 // --napi-modules --harmony-async-iteration should be last
-                cmd: 'node ' + args + ' ./node_modules/.bin/bench -c 1 -i "$(echo bench/implementations/*.js | tr " " ,)" --data "' + new Buffer(JSON.stringify(process.argv.slice(3))).toString('hex') + '"'
+                cmd: 'node ' + args + ' ' + bench_path + ' -c 1 -i "$(echo bench/implementations/*.js | tr " " ,)" --data "' + new Buffer(JSON.stringify(process.argv.slice(3))).toString('hex') + '"'
             },
 
             diagrams: {

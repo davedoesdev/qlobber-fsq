@@ -707,7 +707,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
                         orig_flock(fd, 'exnb', function (err)
                         {
-                            expect(err.code).to.equal('EAGAIN');
+                            expect(err.code).to.be.oneOf(['EAGAIN', 'EWOULDBLOCK']);
 
                             orig_close(fd, function (err)
                             {
@@ -2395,24 +2395,31 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             process.nextTick(function ()
             {
-                var orig_process_all = fsq2._process_all;
+                var orig_process_all = fsq2._process_all,
+                    time = new Date().getTime();
 
                 fsq2._process_all = function ()
                 {
                     count += 1;
-                    return orig_process_all.apply(this, arguments);
+
+                    var r = orig_process_all.apply(this, arguments);
+
+                    if (count === 1024)
+                    {
+                        var time2 = new Date().getTime();
+
+                        expect(time2 - time).to.be.at.least(9000);
+
+                        fsq2.stop_watching(done);
+                    }
+
+                    return r;
                 };
             });
 
             fsq2.on('start', function ()
             {
                 expect(count).to.equal(256);
-
-                setTimeout(function ()
-                {
-                    expect(count).to.equal(1024);
-                    fsq2.stop_watching(done);
-                }, 11000);
             });
         });
     });
