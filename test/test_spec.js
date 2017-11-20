@@ -3940,15 +3940,16 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 done(new Error('should not be called'));
             }
 
-            fs.open = function (path, flags, cb)
+            fs.open = function ()
             {
                 fs.open = orig_open;
-                var ths = this;
+                var ths = this,
+                    args = Array.from(arguments); 
                 fsq.unsubscribe('foo', handler, function (err)
                 {
                     if (err) { return done(err); }
                     setImmediate(done);
-                    orig_open.call(ths, path, flags, cb);
+                    orig_open.apply(ths, args);
                 });
             };
 
