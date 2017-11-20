@@ -3403,7 +3403,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         handler.accept_stream = true;
 
         fsq.subscribe('foo', handler);
-        fsq.publish('foo', { single: true }).end('bar');
+        fsq.publish('foo', { single: single_supported }).end('bar');
     });
 
     it('should support calling back before stream has ended', function (done)
@@ -3427,7 +3427,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
         fsq.subscribe('foo', handler);
         fsq.publish('foo').end('bar');
-        fsq.publish('foo', { single: true }).end('bar');
+        fsq.publish('foo', { single: single_supported }).end('bar');
     });
 
     it('should end/error stream after called back before stream has ended',
@@ -3479,7 +3479,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     process.nextTick(function ()
                     {
                         expect(ended).to.equal(true);
-                        fsq.publish('foo', { single: true }).end('bar');
+                        fsq.publish('foo', { single: single_supported }).end('bar');
                     });
                 });
             }
