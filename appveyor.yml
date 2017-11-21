@@ -3,21 +3,21 @@ environment:
     - nodejs_version: "4"
       TARGET: test-win
     - nodejs_version: "4"
-      TARGET: test-stress
-    #- nodejs_version: "4"
-    #  TARGET: test-multi
+      TARGET: test-stress-win
+    - nodejs_version: "4"
+      TARGET: test-multi-win
     - nodejs_version: "6"
       TARGET: test-win
     - nodejs_version: "6"
-      TARGET: test-stress
-    #- nodejs_version: "6"
-    #  TARGET: test-multi
+      TARGET: test-stress-win
+    - nodejs_version: "6"
+      TARGET: test-multi-win
     - nodejs_version: "8"
       TARGET: test-win
     - nodejs_version: "8"
-      TARGET: test-stress
-    #- nodejs_version: "8"
-    #  TARGET: test-multi
+      TARGET: test-stress-win
+    - nodejs_version: "8"
+      TARGET: test-multi-win
 
 install:
   - ps: Install-Product node $env:nodejs_version
