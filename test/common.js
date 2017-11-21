@@ -140,6 +140,23 @@ afterEach(function (done)
     });
 });
 
+global.get_message_files = function (dir, cb)
+{
+    fs.readdir(dir, function (err, files)
+    {
+        if (err) { return cb(err); }
+
+        async.mapSeries(files, function (subdir, next)
+        {
+            fs.readdir(path.join(dir, subdir), next);
+        }, function (err, files)
+        {
+            if (err) { return cb(err); }
+            cb(null, [].concat.apply([], files));
+        });
+    });
+};
+
 global.check_empty = function (dir, done, cb)
 {
     fs.readdir(dir, function (err, files)

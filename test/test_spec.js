@@ -26,6 +26,17 @@
 /*jslint node: true, nomen: true, bitwise: true, todo: true */
 "use strict";
 
+/*var orig_error = console.error;
+
+console.error = function wup()
+{
+    console.log("WUP");
+    console.error = orig_error;
+    console.trace();
+    console.error = wup;
+    return orig_error.apply(this, arguments);
+};*/
+
 function read_all(s, cb)
 {
     var bufs = [];
@@ -2724,10 +2735,22 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             {
                 setTimeout(function ()
                 {
-                    check_empty(msg_dir, done, function ()
+                    if (process.platform === 'win32')
                     {
-                        cb(null, done);
-                    });
+                        get_message_files(msg_dir, function (err, files)
+                        {
+                            if (err) { return done(err); }
+                            expect(files.length).to.equal(1);
+                            cb(null, done);
+                        });
+                    }
+                    else
+                    {
+                        check_empty(msg_dir, done, function ()
+                        {
+                            cb(null, done);
+                        });
+                    }
                 }, 30 * 1000);
             });
             /*jslint unparam: false */
