@@ -33,7 +33,7 @@
     "ci-test-multi-remote-8": "grunt test-multi --remote=localhost",
     "ci-test-win-4": "grunt lint test",
     "ci-test-win-6": "grunt lint test",
-    "ci-test-win-8": "grunt lint coverage",
+    "ci-test-win-8": "grunt lint && grunt coverage",
     "bench-8": "grunt bench --rounds=1000 --size=1000 --ttl=60 --queues=10 --bucket_stamp_size=0 --ephemeral --disruptor --napi-modules"
   },
   "directories": {

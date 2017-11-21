@@ -4,10 +4,22 @@
 var index = process.argv.indexOf('--napi-modules'),
     args = index < 0 ? '' : process.argv.slice(index).join(' '),
     path = require('path'),
-    bin_path = path.join('.', 'node_modules', '.bin'),
+    mod_path = path.join('.', 'node_modules'),
+    bin_path = path.join(mod_path, '.bin'),
     nyc_path = path.join(bin_path, 'nyc'),
+    grunt_path,
+    bench_path;
+
+if (process.platform === 'win32')
+{
+    grunt_path = path.join(mod_path, 'grunt', 'bin', 'grunt');
+    bench_path = path.join(mod_path, 'b', 'bin', 'bench');
+}
+else
+{
     grunt_path = path.join(bin_path, 'grunt'),
     bench_path = path.join(bin_path, 'bench');
+}
 
 module.exports = function (grunt)
 {
@@ -67,7 +79,7 @@ module.exports = function (grunt)
 
             bench: {
                 // --napi-modules --harmony-async-iteration should be last
-                cmd: 'node ' + args + ' ' + bench_path + ' -c 1 -i "$(echo bench/implementations/*.js | tr " " ,)" --data "' + new Buffer(JSON.stringify(process.argv.slice(3))).toString('hex') + '"'
+                cmd: 'node ' + args + ' ' + bench_path + ' -c 1 -i bench/implementations/qlobber-fsq.js --data "' + new Buffer(JSON.stringify(process.argv.slice(3))).toString('hex') + '"'
             },
 
             diagrams: {
