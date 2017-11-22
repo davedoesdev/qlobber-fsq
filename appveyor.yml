@@ -1,8 +1,23 @@
 environment:
   matrix:
     - nodejs_version: "4"
+      TARGET: test
+    - nodejs_version: "4"
+      TARGET: test-stress
+    - nodejs_version: "4"
+      TARGET: test-multi
     - nodejs_version: "6"
+      TARGET: test
+    - nodejs_version: "6"
+      TARGET: test-stress
+    - nodejs_version: "6"
+      TARGET: test-multi
     - nodejs_version: "8"
+      TARGET: test
+    - nodejs_version: "8"
+      TARGET: test-stress
+    - nodejs_version: "8"
+      TARGET: test-multi
 
 install:
   - ps: Install-Product node $env:nodejs_version
@@ -12,8 +27,6 @@ test_script:
   - node --version
   - npm --version
   - npm install fs-ext
-  - npm run ci-test-win
-  - npm run ci-test-stress-win
-  - npm run ci-test-multi-win
+  - npm run ci-%TARGET%-win
 
 build: off
