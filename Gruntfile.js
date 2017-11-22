@@ -62,7 +62,7 @@ module.exports = function (grunt)
         exec: {
             cover: {
                 // --napi-modules --harmony-async-iteration should be last
-                cmd: nyc_path + " -x Gruntfile.js -x 'test/**' node " + args + " " + grunt_path + " test " + process.argv.slice(3).join(' ')
+                cmd: nyc_path + " -x Gruntfile.js -x \"" + path.join('test', '**') + "\" node " + args + " " + grunt_path + " test " + process.argv.slice(3).join(' ')
             },
 
             cover_report: {

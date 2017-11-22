@@ -19,6 +19,9 @@ function multiple_queues(use_disruptor)
 {
 describe('multiple queues (use_disruptor=' + use_disruptor + ')', function ()
 {
+    var timeout = 60 * 60 * 1000;
+    this.timeout(timeout);
+
     var Disruptor;
     if (use_disruptor)
     {
@@ -44,16 +47,13 @@ describe('multiple queues (use_disruptor=' + use_disruptor + ')', function ()
     {
         it('should publish to multiple queues (' + name + ', num_queues=' + num_queues + ', num_messages=' + num_messages + ', max_message_size=' + max_message_size + ')', function (done)
         {
-            var timeout = 60 * 60 * 1000,
-                num_single = 0,
+            var num_single = 0,
                 num_multi = 0,
                 count_single = 0,
                 count_multi = 0,
                 the_fsqs,
                 checksum = 0,
                 expected_checksum = 0;
-
-            this.timeout(timeout);
 
             fsq.stop_watching(function ()
             {
