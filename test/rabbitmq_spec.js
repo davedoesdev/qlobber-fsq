@@ -385,7 +385,7 @@ function rabbitmq2(prefix, QCons, queues, rounds, msglen)
 function rabbitmq3(prefix, QCons, queues, rounds)
 {
     rabbitmq2(prefix, QCons, queues, rounds, 1);
-    rabbitmq2(prefix, QCons, queues, rounds, 1024);
+    //rabbitmq2(prefix, QCons, queues, rounds, 1024);
     rabbitmq2(prefix, QCons, queues, rounds, 25 * 1024);
     //rabbitmq2(prefix, QCons, queues, rounds, 100 * 1024);
 }
@@ -393,7 +393,7 @@ function rabbitmq3(prefix, QCons, queues, rounds)
 function rabbitmq4(prefix, QCons, queues)
 {
     rabbitmq3(prefix, QCons, queues, 1);
-    rabbitmq3(prefix, QCons, queues, 10);
+    //rabbitmq3(prefix, QCons, queues, 10);
     rabbitmq3(prefix, QCons, queues, 50);
     //rabbitmq3(prefix, QCons, queues, 100);
     //rabbitmq3(prefix, QCons, queues, 500);
