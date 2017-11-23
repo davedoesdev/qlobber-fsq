@@ -130,6 +130,8 @@ beforeEach(function (done)
 
 afterEach(function (done)
 {
+    this.timeout(10 * 60 * 1000);
+
     fsq.stop_watching(function ()
     {
         lsof.counters(function (counters)

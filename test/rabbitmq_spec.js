@@ -377,7 +377,7 @@ function rabbitmq(prefix, QCons, queues, rounds, msglen, retry_prob)
 function rabbitmq2(prefix, QCons, queues, rounds, msglen)
 {
     rabbitmq(prefix, QCons, queues, rounds, msglen, 0);
-    rabbitmq(prefix, QCons, queues, rounds, msglen, 0.25);
+    //rabbitmq(prefix, QCons, queues, rounds, msglen, 0.25);
     rabbitmq(prefix, QCons, queues, rounds, msglen, 0.5);
     //rabbitmq(prefix, QCons, queues, rounds, msglen, 0.75);
 }
