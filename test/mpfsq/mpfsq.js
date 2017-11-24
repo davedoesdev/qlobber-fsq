@@ -6,7 +6,8 @@ var options = JSON.parse(new Buffer(process.argv[2], 'hex')),
     cbs = {},
     cb_count = 0,
     handlers = {},
-    host = require('os').hostname();
+    host = require('os').hostname(),
+    async = require('async');
 
 //console.log(options);
 
@@ -49,16 +50,29 @@ function sum(buf)
     return r;
 }
 
+// https://github.com/nodejs/node/issues/7657
+// https://github.com/libuv/libuv/issues/1099
+
+var send_queue = async.queue(function (msg, cb)
+{
+    process.send(msg, cb);
+});
+
+function send(msg)
+{
+    send_queue.push(msg);
+}
+
 fsq.on('start', function ()
 {
-    process.send({ type: 'start' });
+    send({ type: 'start' });
     //console.log('start', host, process.pid);
 });
 
 fsq.on('stop', function ()
 {
     //console.log('stop', host, process.pid, handlers, cbs);
-    process.send({ type: 'stop' });
+    send({ type: 'stop' });
 });
 
 process.on('message', function (msg)
@@ -72,7 +86,7 @@ process.on('message', function (msg)
             //console.log('got', host, process.pid, msg.topic, info.topic, info.single, info.path, msg.handler);
 
             cbs[cb_count] = cb;
-            process.send(
+            send(
             {
                 type: 'received',
                 handler: msg.handler,
@@ -87,7 +101,7 @@ process.on('message', function (msg)
 
         fsq.subscribe(msg.topic, handlers[msg.handler], function ()
         {
-            process.send(
+            send(
             {
                 type: 'sub_callback',
                 cb: msg.cb
@@ -114,7 +128,7 @@ process.on('message', function (msg)
         fsq.publish(msg.topic, new Buffer(msg.payload, 'base64'), msg.options,
         function (err, fname)
         {
-            process.send(
+            send(
             {
                 type: 'pub_callback',
                 cb: msg.cb,
@@ -138,7 +152,7 @@ process.on('message', function (msg)
             fsq.unsubscribe(msg.topic, handlers[msg.handler], function ()
             {
                 delete handlers[msg.handler];
-                process.send(
+                send(
                 {
                     type: 'unsub_callback',
                     cb: msg.cb
@@ -150,7 +164,7 @@ process.on('message', function (msg)
             fsq.unsubscribe(function ()
             {
                 handlers = {};
-                process.send(
+                send(
                 {
                     type: 'unsub_callback',
                     cb: msg.cb

@@ -413,7 +413,13 @@ function MPFSQBase(child)
         sub_cb_count = 0,
         unsub_cbs = {},
         unsub_cb_count = 0,
-        topics = {};
+        topics = {},
+        // https://github.com/nodejs/node/issues/7657
+        // https://github.com/libuv/libuv/issues/1099
+        send_queue = async.queue(function (msg, cb)
+        {
+            child.send(msg, cb);
+        });
 
     child.on('error', function (err)
     {
@@ -441,14 +447,14 @@ function MPFSQBase(child)
         }
         else if (msg.type === 'stop')
         {
-            child.send({ type: 'exit' });
+            send_queue.push({ type: 'exit' });
         }
         else if (msg.type === 'received')
         {
             //console.log('recv', msg.host, msg.pid, msg.info.topic, msg.info.single, msg.handler);
             handlers[msg.handler](msg.sum, msg.info, function(err)
             {
-                child.send(
+                send_queue.push(
                 {
                     type: 'recv_callback',
                     cb: msg.cb,
@@ -489,7 +495,7 @@ function MPFSQBase(child)
         topics[topic] = topics[topic] || {};
         topics[topic][handler_count] = true;
 
-        child.send(
+        send_queue.push(
         {
             type: 'subscribe',
             topic: topic,
@@ -514,7 +520,7 @@ function MPFSQBase(child)
                 cb();
             };
 
-            child.send(
+            send_queue.push(
             {
                 type: 'unsubscribe',
                 cb: unsub_cb_count
@@ -539,7 +545,7 @@ function MPFSQBase(child)
                     }
                 };
 
-                child.send(
+                send_queue.push(
                 {
                     type: 'unsubscribe',
                     topic: topic,
@@ -558,7 +564,7 @@ function MPFSQBase(child)
                 cb();
             };
 
-            child.send(
+            send_queue.push(
             {
                 type: 'unsubscribe',
                 topic: topic,
@@ -574,7 +580,7 @@ function MPFSQBase(child)
     {
         pub_cbs[pub_cb_count] = cb;
 
-        child.send(
+        send_queue.push(
         {
             type: 'publish',
             topic: topic,
@@ -589,7 +595,7 @@ function MPFSQBase(child)
 
     this.stop_watching = function (cb)
     {
-        child.send({ type: 'stop_watching' });
+        send_queue.push({ type: 'stop_watching' });
 
         if (cb)
         {

@@ -3061,7 +3061,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             fsq2._require_fs = function (fs)
             {
-                if (fs !== 'fs')
+                if (fs !== 'graceful-fs')
                 {
                     throw new Error('dummy');
                 }
@@ -3085,7 +3085,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             fsq2._require_fs = function (fs)
             {
-                if (fs !== 'fs')
+                if (fs !== 'graceful-fs')
                 {
                     throw new Error('dummy');
                 }
