@@ -2896,7 +2896,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         var count = 0,
             orig_createReadStream = fs.createReadStream;
 
-        fs.createReadStream = function ()
+        fsq._fs.createReadStream = function ()
         {
             return orig_createReadStream.call(this, '');
         };
@@ -2909,12 +2909,12 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
                 if (!single_supported)
                 {
-                    fs.createReadStream = orig_createReadStream;
+                    fsq._fs.createReadStream = orig_createReadStream;
                     done();
                 }
                 else if (count === 5) // check single repeats
                 {
-                    fs.createReadStream = orig_createReadStream;
+                    fsq._fs.createReadStream = orig_createReadStream;
                 }
             }
         });
@@ -2945,9 +2945,9 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
     it('should pass back write errors when publishing', function (done)
     {
-        var orig_createWriteStream = fs.createWriteStream;
+        var orig_createWriteStream = fsq._fs.createWriteStream;
 
-        fs.createWriteStream = function ()
+        fsq._fs.createWriteStream = function ()
         {
             return orig_createWriteStream.call(this, '');
         };
@@ -2955,7 +2955,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         fsq.publish('foo', 'bar', function (err)
         {
             expect(err.code).to.equal('ENOENT');
-            fs.createWriteStream = orig_createWriteStream;
+            fsq._fs.createWriteStream = orig_createWriteStream;
             done();
         });
     });
@@ -3061,7 +3061,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             fsq2._require_fs = function (fs)
             {
-                if (fs !== 'graceful-fs')
+                if (fs !== 'fs')
                 {
                     throw new Error('dummy');
                 }
@@ -3085,7 +3085,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             fsq2._require_fs = function (fs)
             {
-                if (fs !== 'graceful-fs')
+                if (fs !== 'fs')
                 {
                     throw new Error('dummy');
                 }
@@ -3956,16 +3956,16 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
     {
         it('should be able to unsubscribe while file being opened', function (done)
         {
-            var orig_open = fs.open;
+            var orig_open = fsq._fs.open;
 
             function handler()
             {
                 done(new Error('should not be called'));
             }
 
-            fs.open = function ()
+            fsq._fs.open = function ()
             {
-                fs.open = orig_open;
+                fsq._fs.open = orig_open;
                 var ths = this,
                     args = Array.from(arguments); 
                 fsq.unsubscribe('foo', handler, function (err)
