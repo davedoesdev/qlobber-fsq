@@ -17,7 +17,7 @@ if (process.platform === 'win32')
 }
 else
 {
-    grunt_path = path.join(bin_path, 'grunt'),
+    grunt_path = path.join(bin_path, 'grunt');
     bench_path = path.join(bin_path, 'bench');
 }
 
