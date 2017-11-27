@@ -2871,10 +2871,10 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
     it('should emit an error event if an error occurs before a start event', function (done)
     {
-        var orig_readdir = fs.readdir, fsq2;
+        var orig_mkdir = fs.mkdir, fsq2;
 
         /*jslint unparam: true */
-        fs.readdir = function (dir, cb)
+        fs.mkdir = function (dir, cb)
         {
             cb('dummy error');
         };
@@ -2886,7 +2886,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         fsq2.on('error', function (err)
         {
             expect(err).to.equal('dummy error');
-            fs.readdir = orig_readdir;
+            fs.mkdir = orig_mkdir;
             this.stop_watching(done);
         });
     });
