@@ -31,10 +31,13 @@ module.exports = function (grunt)
 
         mochaTest: {
             default: {
-                src: ['test/common.js', 'test/test_spec.js']
+                src: ['test/common.js',
+                      'test/test_spec.js',
+                      'test/lock_spec.js']
             },
             stress: {
-                src: ['test/common.js', 'test/multiple_queues_spec.js' ]
+                src: ['test/common.js',
+                      'test/multiple_queues_spec.js']
             },
             multi: {
                 src: ['test/common.js',
