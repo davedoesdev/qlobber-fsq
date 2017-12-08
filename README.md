@@ -53,7 +53,7 @@ function handler(stream, info)
 
     stream.on('readable', function ()
     {
-        var chunk = stream.read();
+        var chunk = this.read();
         if (chunk)
         {
             data.push(chunk);
