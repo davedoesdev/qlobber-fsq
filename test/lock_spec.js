@@ -30,7 +30,7 @@ describe('single message lock behaviour', function ()
     {
         fs.unlink(fname, function (err)
         {
-            if (err) { return cb(err); }
+            if (err && (err.code !== 'ENOENT')) { return cb(err); }
             fs.rmdir(path.dirname(fname), cb);
         });
     });
@@ -48,7 +48,7 @@ describe('single message lock behaviour', function ()
                     if (err) { return cb(err); }
                     fs.flock(fd2, 'exnb', function (err)
                     {
-                        expect(err.code).to.equal('EWOULDBLOCK');
+                        expect(err.code).to.equal(process.platform === 'win32' ? 'EWOULDBLOCK' : 'EAGAIN');
                         fs.close(fd, function (err)
                         {
                             if (err) { return cb(err); }
@@ -120,41 +120,56 @@ describe('single message lock behaviour', function ()
                             fs.ftruncate(fd, 0, function (err)
                             {
                                 if (err) { return cb(err); }
-                                fs.flock(fd, 'un', function (err)
+
+                                function unlock()
                                 {
-                                    if (err) { return cb(err); }
-                                    fs.flock(fd2, 'exnb', function (err)
+                                    fs.flock(fd, 'un', function (err)
                                     {
                                         if (err) { return cb(err); }
-
-                                        var stream3 = fs.createReadStream(null,
+                                        fs.flock(fd2, 'exnb', function (err)
                                         {
-                                            fd: fd2,
-                                            autoClose: false,
-                                            start: 0,
-                                            end: 0
-                                        }),
-                                        got_data = 0;
+                                            if (err) { return cb(err); }
 
-                                        stream3.on('readable', function ()
-                                        {
-                                            var data = this.read();
-                                            if (data)
+                                            var stream3 = fs.createReadStream(null,
                                             {
-                                                got_data += data.length;
-                                            }
-                                        });
+                                                fd: fd2,
+                                                autoClose: false,
+                                                start: 0,
+                                                end: 0
+                                            }),
+                                            got_data = 0;
 
-                                        stream3.once('end', function ()
-                                        {
-                                            expect(got_data).to.equal(0);
-                                            fs.close(fd, function (err)
+                                            stream3.on('readable', function ()
                                             {
-                                                if (err) { return cb(err); }
-                                                fs.close(fd2, cb);
+                                                var data = this.read();
+                                                if (data)
+                                                {
+                                                    got_data += data.length;
+                                                }
+                                            });
+
+                                            stream3.once('end', function ()
+                                            {
+                                                expect(got_data).to.equal(0);
+                                                fs.close(fd, function (err)
+                                                {
+                                                    if (err) { return cb(err); }
+                                                    fs.close(fd2, cb);
+                                                });
                                             });
                                         });
                                     });
+                                }
+
+                                if (process.platform === 'win32')
+                                {
+                                    return unlock();
+                                }
+
+                                fs.unlink(fname, function (err)
+                                {
+                                    if (err) { return cb(err); }
+                                    unlock();
                                 });
                             });
                         });
