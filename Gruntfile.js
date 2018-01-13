@@ -59,7 +59,8 @@ module.exports = function (grunt)
                 'QlobberFSQ.prototype.subscribe': '\n## Publish and subscribe',
                 'QlobberFSQ.prototype.stop_watching': '\n## Lifecycle',
                 'QlobberFSQ.events.start': '\n## Events'
-            }
+            },
+            doxOptions: { skipSingleStar: true }
         },
 
         exec: {

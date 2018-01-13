@@ -262,7 +262,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 **Parameters:**
 
-- `{Object} [options]` Configures the file system queue. Valid properties are listed below: 
+- `{Object} [options]` Configures the file system queue. Valid properties are listed below:
   - `{String} fsq_dir` The path to the file system queue directory. Note that the following sub-directories will be created under this directory if they don't exist: `messages`, `staging`, `topics` and `update`. Defaults to a directory named `fsq` in the `qlobber-fsq` module directory.
 
   - `{Boolean} encode_topics` Whether to hex-encode message topics. Because topic strings form part of message filenames, they're first hex-encoded. If you can ensure that your message topics contain only valid filename characters, set this to `false` to skip encoding.
@@ -338,8 +338,8 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 **Parameters:**
 
-- `{String} topic` Which messages you're interested in receiving. Message topics are split into words using `.` as the separator. You can use `*` to match exactly one word in a topic or `#` to match zero or more words. For example, `foo.*` would match `foo.bar` whereas `foo.#` would match `foo`, `foo.bar` and `foo.bar.wup`. Note you can change the separator and wildcard characters by specifying the `separator`, `wildcard_one` and `wildcard_some` options when [constructing `QlobberFSQ` objects](#qlobberfsqoptions). See the [`qlobber` documentation](https://github.com/davedoesdev/qlobber#qlobberoptions) for more information. 
-- `{Function} handler` Function to call when a new message is received on the file system queue and its topic matches against `topic`. `handler` will be passed the following arguments: 
+- `{String} topic` Which messages you're interested in receiving. Message topics are split into words using `.` as the separator. You can use `*` to match exactly one word in a topic or `#` to match zero or more words. For example, `foo.*` would match `foo.bar` whereas `foo.#` would match `foo`, `foo.bar` and `foo.bar.wup`. Note you can change the separator and wildcard characters by specifying the `separator`, `wildcard_one` and `wildcard_some` options when [constructing `QlobberFSQ` objects](#qlobberfsqoptions). See the [`qlobber` documentation](https://github.com/davedoesdev/qlobber#qlobberoptions) for more information.
+- `{Function} handler` Function to call when a new message is received on the file system queue and its topic matches against `topic`. `handler` will be passed the following arguments:
   - `{Readable|Buffer} data` [Readable](http://nodejs.org/api/stream.html#stream_class_stream_readable) stream or message content as a [Buffer](http://nodejs.org/api/buffer.html#buffer_class_buffer). By default you'll receive the message content. If `handler` has a property `accept_stream` set to a truthy value then you'll receive a stream. Note that _all_ subscribers will receive the same stream or content for each message. You should take this into account when reading from the stream. The stream can be piped into multiple [Writable](http://nodejs.org/api/stream.html#stream_class_stream_writable) streams but bear in mind it will go at the rate of the slowest one.
 
   - `{Object} info` Metadata for the message, with the following properties:
@@ -358,10 +358,10 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
     - `{Function} [finish]` Optional function to call once the message has been deleted and unlocked, in the case of `info.single === true`, or straight away otherwise. It will be passed the following argument:
       - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
-- `{Object} [options]` Optional settings for this subscription: 
+- `{Object} [options]` Optional settings for this subscription:
   - `{Boolean} subscribe_to_existing` If `true` then `handler` will be called with any existing, unexpired messages that match `topic`, as well as new ones. Defaults to `false` (only new messages).
 
-- `{Function} [cb]` Optional function to call once the subscription has been registered. This will be passed the following argument: 
+- `{Function} [cb]` Optional function to call once the subscription has been registered. This will be passed the following argument:
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
@@ -372,9 +372,9 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 **Parameters:**
 
-- `{String} [topic]` Which messages you're no longer interested in receiving via the `handler` function. This should be a topic you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-options-cb). If topic is `undefined` then all handlers for all topics are unsubscribed. 
-- `{Function} [handler]` The function you no longer want to be called with messages published to the topic `topic`. This should be a function you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-options-cb). If you subscribed `handler` to a different topic then it will still be called for messages which match that topic. If `handler` is undefined, all handlers for the topic `topic` are unsubscribed. 
-- `{Function} [cb]` Optional function to call once `handler` has been unsubscribed from `topic`. This will be passed the following argument: 
+- `{String} [topic]` Which messages you're no longer interested in receiving via the `handler` function. This should be a topic you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-options-cb). If topic is `undefined` then all handlers for all topics are unsubscribed.
+- `{Function} [handler]` The function you no longer want to be called with messages published to the topic `topic`. This should be a function you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-options-cb). If you subscribed `handler` to a different topic then it will still be called for messages which match that topic. If `handler` is undefined, all handlers for the topic `topic` are unsubscribed.
+- `{Function} [cb]` Optional function to call once `handler` has been unsubscribed from `topic`. This will be passed the following argument:
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
@@ -385,9 +385,9 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 **Parameters:**
 
-- `{String} topic` Message topic. The topic should be a series of words separated by `.` (or the `separator` character you provided to the [`QlobberFSQ constructor`](#qlobberfsqoptions)). Topic words can contain any character, unless you set `encode_topics` to `false` in the [`QlobberFSQ constructor`](#qlobberfsqoptions). In that case they can contain any valid filename character for your file system, although it's probably sensible to limit it to alphanumeric characters, `-`, `_` and `.`. 
-- `{String | Buffer} [payload]` Message payload. If you don't pass a payload then `publish` will return a [Writable stream](http://nodejs.org/api/stream.html#stream_class_stream_writable) for you to write the payload into. 
-- `{Object} [options]` Optional settings for this publication: 
+- `{String} topic` Message topic. The topic should be a series of words separated by `.` (or the `separator` character you provided to the [`QlobberFSQ constructor`](#qlobberfsqoptions)). Topic words can contain any character, unless you set `encode_topics` to `false` in the [`QlobberFSQ constructor`](#qlobberfsqoptions). In that case they can contain any valid filename character for your file system, although it's probably sensible to limit it to alphanumeric characters, `-`, `_` and `.`.
+- `{String | Buffer} [payload]` Message payload. If you don't pass a payload then `publish` will return a [Writable stream](http://nodejs.org/api/stream.html#stream_class_stream_writable) for you to write the payload into.
+- `{Object} [options]` Optional settings for this publication:
   - `{Boolean} single` If `true` then the message will be given to _at most_ one interested subscriber, across all `QlobberFSQ` objects scanning the file system queue. Otherwise all interested subscribers will receive the message (the default).
 
   - `{Integer} ttl` Time-to-live (in milliseconds) for this message. If you don't specify anything then `single_ttl` or `multi_ttl` (provided to the [`QlobberFSQ constructor`](#qlobberfsqoptions)) will be used, depending on the value of `single`. After the time-to-live for the message has passed, the message is ignored and deleted when convenient.
@@ -407,20 +407,19 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
   - `{Integer} bucket` Which bucket to write the message into, instead of using `hasher` to calculate it.
 
   - `{Boolean} ephemeral` This applies only if a shared memory LMAX Disruptor is being used for the message's bucket (see the `get_disruptor` option to the [`QlobberFSQ constructor`](#qlobberfsqoptions)). By default, the message is written both to the Disruptor and the filesystem. If `ephemeral` is truthy, the message is written only to the Disruptor.
-  
-    If the Disruptor's elements aren't large enough to contain the message's metadata, the message won't be written  to the Disruptor and `cb` (below) will receive an error with a property `code` equal to the string `buffer-too-small`.
-    
-    However, if the Disruptor's elements aren't large enough for the message's payload, the message _will_ be written to disk. The amount of space availabe in the Disruptor for the payload can be found via the `ephemeral_size` property on the stream returned by this function. If your message won't fit and you don't want to write it to disk, emit an `error` event on the stream without ending it.
-    
-- `{Function} [cb]` Optional function to call once the message has been written to the file system queue. This will be called after the message has been moved into its bucket and is therefore available to subscribers in any `QlobberFSQ` object scanning the queue. It will be passed the following arguments: 
+
+    - If the Disruptor's elements aren't large enough to contain the message's metadata, the message won't be written  to the Disruptor and `cb` (below) will receive an error with a property `code` equal to the string `buffer-too-small`.
+
+    - However, if the Disruptor's elements aren't large enough for the message's payload, the message _will_ be written to disk. The amount of space availabe in the Disruptor for the payload can be found via the `ephemeral_size` property on the stream returned by this function. If your message won't fit and you don't want to write it to disk, emit an `error` event on the stream without ending it.
+
+- `{Function} [cb]` Optional function to call once the message has been written to the file system queue. This will be called after the message has been moved into its bucket and is therefore available to subscribers in any `QlobberFSQ` object scanning the queue. It will be passed the following arguments:
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
   - `{Object} info` Metadata for the message. See [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-options-cb) for a description of `info`'s properties.
 
-
 **Return:**
 
-`{Stream | undefined}` A [Writable stream](http://nodejs.org/api/stream.html#stream_class_stream_writable) if no `payload` was passed, otherwise `undefined`.
+`{Stream | Undefined}` A [Writable stream](http://nodejs.org/api/stream.html#stream_class_stream_writable) if no `payload` was passed, otherwise `undefined`.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
 
@@ -430,7 +429,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 **Parameters:**
 
-- `{Function]} [cb]` Optional function to call once scanning has stopped. Alternatively, you can listen for the [`stop` event](#qlobberfsqeventsstop).
+- `{Function} [cb]` Optional function to call once scanning has stopped. Alternatively, you can listen for the [`stop` event](#qlobberfsqeventsstop).
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
 
@@ -453,8 +452,8 @@ each name, return the number of buckets that can be represented.
 
 **Parameters:**
 
-- `{Integer} bucket_base` Radix for bucket name characters. 
-- `{Integer} bucket_num_chars` Number of characters in bucket names. 
+- `{Integer} bucket_base` Radix for bucket name characters.
+- `{Integer} bucket_num_chars` Number of characters in bucket names.
 
 **Return:**
 
