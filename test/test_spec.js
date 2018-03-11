@@ -349,7 +349,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             expect(data.toString('utf8')).to.equal('bar');
             expect(cb.num_handlers).to.equal(1);
 
-            
             fs.readFile(info.path, function (err, data)
             {
                 if (ephemeral)
@@ -3201,7 +3200,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                         if (!err) { return done(new Error('expected an error')); }
                         if (err.code) // 0.12 doesn't set code
                         {
-                            expect(err.code).to.equal('ENOENT');
+                            expect(err.code).to.be.oneOf(['ENOENT', 'ERR_INVALID_ARG_TYPE']);
                         }
                     }
                     this.stop_watching(done);
