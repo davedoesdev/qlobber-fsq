@@ -1,5 +1,11 @@
 environment:
   matrix:
+    - nodejs_version: "9"
+      TARGET: test
+    - nodejs_version: "9"
+      TARGET: test-stress
+    - nodejs_version: "9"
+      TARGET: test-multi
     - nodejs_version: "8"
       TARGET: test
     - nodejs_version: "8"
@@ -12,10 +18,6 @@ environment:
       TARGET: test-stress
     - nodejs_version: "6"
       TARGET: test-multi
-    - nodejs_version: "4"
-      TARGET: test
-    - nodejs_version: "4"
-      TARGET: test-stress
 
 install:
   - ps: Install-Product node $env:nodejs_version
