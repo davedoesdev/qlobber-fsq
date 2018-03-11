@@ -1,7 +1,7 @@
 {
   "name": "qlobber-fsq",
   "description": "Shared file system queue. Supports pub-sub, work queues, wildcards, multi-process and distributed use.",
-  "version": "10.0.7",
+  "version": "11.0.0",
   "homepage": "https://github.com/davedoesdev/qlobber-fsq",
   "author": {
     "name": "David Halls",
@@ -19,19 +19,15 @@
   "main": "index.js",
   "scripts": {
     "test": "grunt lint test",
-    "ci-test-4": "grunt lint test",
     "ci-test-6": "grunt lint test",
     "ci-test-8": "grunt lint test",
     "ci-test-9": "grunt lint && grunt coverage --getdents_size=1024 --disruptor --napi-modules --harmony-async-iteration && grunt coveralls",
-    "ci-test-stress-4": "grunt test-stress",
     "ci-test-stress-6": "grunt test-stress",
     "ci-test-stress-8": "grunt test-stress",
     "ci-test-stress-9": "node --napi-modules ./node_modules/.bin/grunt test-stress --disruptor",
-    "ci-test-multi-4": "grunt test-multi",
     "ci-test-multi-6": "grunt test-multi",
     "ci-test-multi-8": "grunt test-multi",
     "ci-test-multi-9": "node --napi-modules ./node_modules/.bin/grunt test-multi --disruptor",
-    "ci-test-multi-remote-4": "grunt test-multi --remote=localhost",
     "ci-test-multi-remote-6": "grunt test-multi --remote=localhost",
     "ci-test-multi-remote-8": "grunt test-multi --remote=localhost",
     "ci-test-multi-remote-9": "grunt test-multi --remote=localhost",
@@ -84,6 +80,6 @@
     "babel-eslint": "~8.2.2"
   },
   "engines": {
-    "node": ">= 4"
+    "node": ">= 6"
   }
 }
