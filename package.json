@@ -21,7 +21,7 @@
     "test": "grunt lint test",
     "ci-test-6": "grunt lint test",
     "ci-test-8": "grunt lint test",
-    "ci-test-10": "grunt lint && grunt coverage --getdents_size=1024 --disruptor --napi-modules --harmony-async-iteration && grunt coveralls",
+    "ci-test-10": "grunt lint && grunt coverage --getdents_size=1024 --disruptor --napi-modules && grunt coveralls",
     "ci-test-stress-6": "grunt test-stress",
     "ci-test-stress-8": "grunt test-stress",
     "ci-test-stress-10": "node --napi-modules ./node_modules/.bin/grunt test-stress --disruptor",
