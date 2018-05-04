@@ -41,11 +41,6 @@
     "lib": "lib"
   },
   "keywords": [
-    "amqp",
-    "mqtt",
-    "rabbitmq",
-    "cybertron",
-    "ascoltatore",
     "qlobber",
     "pubsub",
     "queue",
