@@ -3200,7 +3200,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                         if (!err) { return done(new Error('expected an error')); }
                         if (err.code) // 0.12 doesn't set code
                         {
-                            expect(err.code).to.be.oneOf(['ENOENT', 'ERR_INVALID_ARG_TYPE']);
+                            expect(err.code).to.be.oneOf(['ENOENT', 'ERR_INVALID_ARG_TYPE', 'ERR_INVALID_ARG_VALUE']);
                         }
                     }
                     this.stop_watching(done);
