@@ -30,9 +30,5 @@ before_install:
   - cat ~/.bashrc
   - nvm alias default "$(nvm current)"
   - ssh localhost node --version
-  - pyenv versions
-  - pyenv global "$PYVER"
-  - ssh localhost python --version
-  - npm install fs-ext
 script:
   - npm run ci-$TARGET-$(node --version | grep -oE '[0-9]+' | head -1)
