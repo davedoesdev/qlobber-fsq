@@ -53,7 +53,7 @@
     "wu": "~2.1.0"
   },
   "optionalDependencies": {
-    "fs-ext": "davedoesdev/node-fs-ext",
+    "@davedoesdev/fs-ext": "~1.1.1",
     "getdents": "~1.0.2",
     "shared-memory-disruptor": "~2.0.1"
   },
