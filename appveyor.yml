@@ -1,4 +1,5 @@
 environment:
+  REQUIRE_SINGLE: true
   matrix:
     - nodejs_version: "10"
       TARGET: test
