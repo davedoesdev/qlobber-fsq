@@ -2902,6 +2902,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
         fsq.on('warning', function (err)
         {
+            console.log(err);
             if (err && (err.code === 'ENOENT'))
             {
                 count += 1;
