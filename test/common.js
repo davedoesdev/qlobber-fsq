@@ -21,11 +21,15 @@
 
 try
 {
-    global.fs = require('fs-ext');
+    global.fs = require('@davedoesdev/fs-ext');
     global.single_supported = true;
 }
 catch (ex)
 {
+    if (process.env.REQUIRE_SINGLE === 'true')
+    {
+        throw ex;
+    }
     global.fs = require('fs');
     global.single_supported = false;
 }
@@ -79,10 +83,13 @@ global.ignore_ebusy = function (fsq, extra)
         }
     });
 
-    if (!single_supported)
+    fsq.on('single_disabled', function ()
     {
-        fsq.on('single_disabled', function () { });
-    }
+        if (process.env.REQUIRE_SINGLE === 'true')
+        {
+            throw new Error('single required');
+        }
+    });
 };
 
 beforeEach(function (done)
