@@ -2276,12 +2276,15 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
         fsq2.subscribe('foo', function ()
         {
-            expect(new Date().getTime() - time).to.be.at.least(fsq2._poll_interval);
+            expect(new Date().getTime() - time).to.be.at.least(fsq2._poll_interval - 1000);
             fsq2.stop_watching(done);
         });
 
         fsq2.on('start', function ()
         {
+            // The countdown to the next poll has already started so from here
+            // it may not be poll_interval until the message is received -
+            // which is why we subtract a second above.
             time = new Date().getTime();
             fsq2.publish('foo', 'bar', { ttl: 30 * 1000 });
         });
