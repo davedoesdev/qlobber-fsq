@@ -2723,7 +2723,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
     if (single_supported)
     {
-        it('should clear up expired message while worker has it locked', function (done)
+        it.only('should clear up expired message while worker has it locked', function (done)
         {
             this.timeout(60 * 1000);
 
@@ -2732,6 +2732,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             /*jslint unparam: true */
             fsq.subscribe('foo', function (data, info, cb)
             {
+                console.log(info);
                 setTimeout(function ()
                 {
                     if (process.platform === 'win32')
@@ -2754,7 +2755,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             });
             /*jslint unparam: false */
 
-            fsq.publish('foo', 'bar', { single: true, ttl: 500 }, function (err)
+            fsq.publish('foo', 'bar', { single: true, ttl: 5000 }, function (err)
             {
                 if (err) { done(err); }
             });
