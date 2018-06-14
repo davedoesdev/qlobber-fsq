@@ -2902,7 +2902,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
         fsq.on('warning', function (err)
         {
-            console.log(err);
             if (err && (err.code === 'ENOENT'))
             {
                 count += 1;
@@ -2925,6 +2924,10 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             if (!info.single)
             {
                 expect(use_disruptor).to.equal(true);
+                if (!single_supported)
+                {
+                    done();
+                }
                 return;
             }
             expect(info.single).to.equal(true); // we throw multi away on error
