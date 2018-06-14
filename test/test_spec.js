@@ -2723,7 +2723,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
     if (single_supported)
     {
-        it.only('should clear up expired message while worker has it locked', function (done)
+        it('should clear up expired message while worker has it locked', function (done)
         {
             this.timeout(60 * 1000);
 
