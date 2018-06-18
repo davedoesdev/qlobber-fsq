@@ -54,7 +54,7 @@
     "semver": "~5.5.0"
   },
   "optionalDependencies": {
-    "@davedoesdev/fs-ext": "~1.2.1",
+    "fs-ext": "~1.2.1",
     "getdents": "~1.0.2",
     "shared-memory-disruptor": "~2.0.1"
   },

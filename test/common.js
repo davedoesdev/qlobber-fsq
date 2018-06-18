@@ -21,7 +21,7 @@
 
 try
 {
-    global.fs = require('@davedoesdev/fs-ext');
+    global.fs = require('fs-ext');
     global.single_supported = true;
 }
 catch (ex)
