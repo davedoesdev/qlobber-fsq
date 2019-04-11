@@ -1,7 +1,7 @@
 {
   "name": "qlobber-fsq",
   "description": "Shared file system queue. Supports pub-sub, work queues, wildcards, multi-process and distributed use.",
-  "version": "11.0.6",
+  "version": "11.0.7",
   "homepage": "https://github.com/davedoesdev/qlobber-fsq",
   "author": {
     "name": "David Halls",
@@ -47,33 +47,33 @@
     "routing"
   ],
   "dependencies": {
-    "async": "~2.6.0",
-    "graceful-fs": "~4.1.11",
-    "qlobber": "~3.0.0",
+    "async": "~2.6.2",
+    "graceful-fs": "~4.1.15",
+    "qlobber": "~3.1.0",
     "wu": "~2.1.0",
-    "semver": "~5.5.0"
+    "semver": "~6.0.0"
   },
   "optionalDependencies": {
     "@davedoesdev/fs-ext": "~1.2.2",
-    "getdents": "~1.0.2",
-    "shared-memory-disruptor": "~2.0.1"
+    "getdents": "~1.0.5",
+    "shared-memory-disruptor": "~2.0.3"
   },
   "devDependencies": {
-    "grunt": "~1.0.2",
-    "grunt-eslint": "~20.1.0",
+    "grunt": "~1.0.4",
+    "grunt-eslint": "~21.0.0",
     "grunt-mocha-test": "~0.13.3",
-    "grunt-apidox": "~2.0.0",
+    "grunt-apidox": "~2.0.1",
     "grunt-exec": "~3.0.0",
-    "mocha": "~5.0.4",
-    "chai": "~4.1.2",
-    "nyc": "~11.4.1",
-    "coveralls": "~3.0.0",
+    "mocha": "~6.1.2",
+    "chai": "~4.2.0",
+    "nyc": "~13.3.0",
+    "coveralls": "~3.0.3",
     "b": "git://github.com/davedoesdev/b.git",
-    "rimraf": "~2.6.2",
+    "rimraf": "~2.6.3",
     "lsof": "~0.1.0",
-    "yargs": "~11.0.0",
-    "cp-remote": "~0.1.6",
-    "babel-eslint": "~8.2.2"
+    "yargs": "~13.2.2",
+    "cp-remote": "~0.1.7",
+    "babel-eslint": "~10.0.1"
   },
   "engines": {
     "node": ">= 6"
