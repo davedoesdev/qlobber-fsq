@@ -530,7 +530,7 @@ function MPFSQBase(child)
         }
         else if (handler === undefined)
         {
-            var n = topics[topic];
+            var n = topics[topic].length;
 
             topics[topic].forEach(function (h)
             {
@@ -647,7 +647,7 @@ function make_MPFSQ(use_disruptor)
         MPFSQBase.call(
             this,
             child_process.fork(path.join(__dirname, 'mpfsq', 'mpfsq.js'),
-                               [new Buffer(JSON.stringify(options)).toString('hex')]),
+                               [Buffer.from(JSON.stringify(options)).toString('hex')]),
             options);
     }
 
@@ -666,7 +666,7 @@ function make_RemoteMPFSQ(hosts)
             this,
             cp_remote.run(hosts[index],
                           path.join(__dirname, 'mpfsq', 'mpfsq.js'),
-                          new Buffer(JSON.stringify(options)).toString('hex')),
+                          Buffer.from(JSON.stringify(options)).toString('hex')),
             options);
     }
 

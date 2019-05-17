@@ -11,7 +11,7 @@ var child_process = require('child_process'),
     yargs = require('yargs'),
     QlobberFSQ = require('../..').QlobberFSQ,
     num_buckets = QlobberFSQ.get_num_buckets(),
-    argv = yargs(JSON.parse(new Buffer(yargs.argv.data, 'hex')))
+    argv = yargs(JSON.parse(Buffer.from(yargs.argv.data, 'hex')))
             .demand('rounds')
             .demand('size')
             .demand('ttl')
@@ -84,7 +84,7 @@ before(function (times, done)
             async.times(argv.queues, function (n, cb)
             {
                 var bench_fsq = path.join(__dirname, 'bench-fsq', 'bench-fsq.js'),
-                    opts = new Buffer(JSON.stringify({
+                    opts = Buffer.from(JSON.stringify({
                         fsq_dir: fsq_dir,
                         n: n,
                         queues: argv.queues,

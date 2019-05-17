@@ -93,7 +93,7 @@ npm install qlobber-fsq
 
 - `qlobber-fsq` makes no assurances about the security or privacy of messages in transit or at rest. It's up to your application to encrypt messages if required.
 
-- `qlobber-fsq` supports Node 0.12 onwards.
+- `qlobber-fsq` supports Node 6 onwards.
 
 ## Distributed filesystems
 
@@ -173,7 +173,7 @@ grunt test-multi [--fsq-dir=<path>] [--queues=<number of queues>] [--disruptor]
 
 If you omit `--queues` then one process will be created per core (detected with [`os.cpus()`](http://nodejs.org/api/os.html#os_os_cpus)).
 
-To run the distributed tests (one Node process per remote host, each one publishing and subscribing to different messages);
+To run the distributed tests (one process per remote host, each one publishing and subscribing to different messages):
 
 ```shell
 grunt test-multi --fsq-dir=<path> --remote=<host1> --remote=<host2>
@@ -184,7 +184,7 @@ You can specify as many remote hosts as you like. The test uses [`cp-remote`](ht
 - The `qlobber-fsq` module is installed at the same location.
 - Mount the same distributed file system on the directory you specify for `--fsq-dir`. FraunhoferFS and CephFS are the only distributed file systems currently supported.
 
-Please note the multi-process and distributed tests don't run on Windows.
+Please note the distributed tests don't run on Windows.
 
 ## Lint
 
@@ -224,7 +224,7 @@ grunt bench [--fsq-dir=<path>] \
 
 If you don't specify `--fsq-dir` then the default will be used (a directory named `fsq` in the `bench` directory).
 
-If you provide at least one `--remote <host>` argument then the benchmark will be distributed across multiple hosts using [`cp-remote`](https://github.com/davedoesdev/cp-remote). Make sure on each host:
+If you provide at least one `--remote=<host>` argument then the benchmark will be distributed across multiple hosts using [`cp-remote`](https://github.com/davedoesdev/cp-remote). Make sure on each host:
 
 - The `qlobber-fsq` module is installed at the same location.
 - Mount the same distributed file system on the directory you specify for `--fsq-dir`. FraunhoferFS and CephFS are the only distributed file systems currently supported.
@@ -373,7 +373,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 **Parameters:**
 
 - `{String} [topic]` Which messages you're no longer interested in receiving via the `handler` function. This should be a topic you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-options-cb). If topic is `undefined` then all handlers for all topics are unsubscribed.
-- `{Function} [handler]` The function you no longer want to be called with messages published to the topic `topic`. This should be a function you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-options-cb). If you subscribed `handler` to a different topic then it will still be called for messages which match that topic. If `handler` is undefined, all handlers for the topic `topic` are unsubscribed.
+- `{Function} [handler]` The function you no longer want to be called with messages published to the topic `topic`. This should be a function you've previously passed to [`subscribe`](#qlobberfsqprototypesubscribetopic-handler-options-cb). If you subscribed `handler` to a different topic then it will still be called for messages which match that topic. If `handler` is `undefined`, all handlers for the topic `topic` are unsubscribed.
 - `{Function} [cb]` Optional function to call once `handler` has been unsubscribed from `topic`. This will be passed the following argument:
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
@@ -419,7 +419,7 @@ If you provide at least one `--remote <host>` argument then the benchmark will b
 
 **Return:**
 
-`{Stream | Undefined}` A [Writable stream](http://nodejs.org/api/stream.html#stream_class_stream_writable) if no `payload` was passed, otherwise `undefined`.
+`{Stream}` A [Writable stream](http://nodejs.org/api/stream.html#stream_class_stream_writable) if no `payload` was passed, otherwise `undefined`.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
 

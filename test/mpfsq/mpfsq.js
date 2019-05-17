@@ -1,7 +1,7 @@
 /*jslint node: true */
 "use strict";
 
-var options = JSON.parse(new Buffer(process.argv[2], 'hex')),
+var options = JSON.parse(Buffer.from(process.argv[2], 'hex')),
     QlobberFSQ = require('../..').QlobberFSQ,
     cbs = {},
     cb_count = 0,
@@ -125,7 +125,7 @@ process.on('message', function (msg)
             msg.options.ephemeral = true;
         }
 
-        fsq.publish(msg.topic, new Buffer(msg.payload, 'base64'), msg.options,
+        fsq.publish(msg.topic, Buffer.from(msg.payload, 'base64'), msg.options,
         function (err, fname)
         {
             send(

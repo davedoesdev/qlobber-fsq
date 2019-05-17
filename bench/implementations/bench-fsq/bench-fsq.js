@@ -7,7 +7,7 @@ var async = require('async'),
     crypto = require('crypto');
 require('../../../test/rabbitmq_bindings.js');
 
-var options = JSON.parse(new Buffer(process.argv[2], 'hex'));
+var options = JSON.parse(Buffer.from(process.argv[2], 'hex'));
 
 if (options.disruptor)
 {

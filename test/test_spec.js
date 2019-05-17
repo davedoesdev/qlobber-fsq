@@ -335,7 +335,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             expect(info.topic).to.equal('foo');
             expect(info.single).to.equal(false);
             expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-            expect(info.fname.lastIndexOf(new Buffer('foo').toString('hex') + '@', 0)).to.equal(0);
+            expect(info.fname.lastIndexOf(Buffer.from('foo').toString('hex') + '@', 0)).to.equal(0);
             expect(info.topic_path).to.equal(undefined);
             if (info.data !== undefined)
             {
@@ -704,7 +704,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 expect(info.topic).to.equal('foo');
                 expect(info.single).to.equal(true);
                 expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-                expect(info.fname.lastIndexOf(new Buffer('foo').toString('hex') + '@', 0)).to.equal(0);
+                expect(info.fname.lastIndexOf(Buffer.from('foo').toString('hex') + '@', 0)).to.equal(0);
                 expect(data.toString('utf8')).to.equal('bar');
 
                 fs.stat(info.path, function (err)
@@ -1786,7 +1786,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             expect(info.topic).to.equal(topic);
             expect(info.single).to.equal(false);
             expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-            expect(info.fname.lastIndexOf(new Buffer(topic).toString('hex').substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
+            expect(info.fname.lastIndexOf(Buffer.from(topic).toString('hex').substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
             expect(data.toString('utf8')).to.equal('bar');
 
             var topic_dir = path.dirname(path.dirname(info.topic_path));
@@ -1797,7 +1797,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             {
                 if (err) { return done(err); }
 
-                expect(split.toString('utf8')).to.equal(new Buffer(topic).toString('hex').substr(fsq._split_topic_at));
+                expect(split.toString('utf8')).to.equal(Buffer.from(topic).toString('hex').substr(fsq._split_topic_at));
 
                 setTimeout(function ()
                 {
@@ -1839,7 +1839,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 expect(info.topic).to.equal(topic);
                 expect(info.single).to.equal(true);
                 expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-                expect(info.fname.lastIndexOf(new Buffer(topic).toString('hex').substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
+                expect(info.fname.lastIndexOf(Buffer.from(topic).toString('hex').substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
                 expect(data.toString('utf8')).to.equal('bar');
 
                 var topic_dir = path.dirname(path.dirname(info.topic_path));
@@ -1850,7 +1850,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 {
                     if (err) { return done(err); }
 
-                    expect(split.toString('utf8')).to.equal(new Buffer(topic).toString('hex').substr(fsq._split_topic_at));
+                    expect(split.toString('utf8')).to.equal(Buffer.from(topic).toString('hex').substr(fsq._split_topic_at));
 
                     cb(null, function ()
                     {
@@ -1893,7 +1893,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     expect(info.topic).to.equal(topic);
                     expect(info.single).to.equal(false);
                     expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-                    expect(info.fname.lastIndexOf(new Buffer(topic).toString('hex').substr(0, ephemeral ? undefined : 5) + '@', 0)).to.equal(0);
+                    expect(info.fname.lastIndexOf(Buffer.from(topic).toString('hex').substr(0, ephemeral ? undefined : 5) + '@', 0)).to.equal(0);
                     expect(data.toString('utf8')).to.equal('bar');
 
                     if (ephemeral)
@@ -1912,7 +1912,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     fs.readFile(info.topic_path, function (err, split)
                     {
                         if (err) { return done(err); }
-                        expect(split.toString('utf8')).to.equal(new Buffer(topic).toString('hex').substr(5));
+                        expect(split.toString('utf8')).to.equal(Buffer.from(topic).toString('hex').substr(5));
 
                         setTimeout(function ()
                         {
@@ -3141,19 +3141,19 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 expect(rsingle).to.equal(false);
                 expect(info.topic).to.equal(ltopic);
                 expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-                expect(info.fname.lastIndexOf(new Buffer(ltopic).toString('hex').substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
+                expect(info.fname.lastIndexOf(Buffer.from(ltopic).toString('hex').substr(0, fsq._split_topic_at) + '@', 0)).to.equal(0);
                 expect(data.toString('utf8')).to.equal('test');
 
                 var topic_dir = path.dirname(path.dirname(info.topic_path));
                 expect(topic_dir).to.equal(path.join(msg_dir, '..', 'topics'));
-                expect(fs.readFileSync(info.topic_path).toString('utf8')).to.equal(new Buffer(ltopic).toString('hex').substr(fsq._split_topic_at));
+                expect(fs.readFileSync(info.topic_path).toString('utf8')).to.equal(Buffer.from(ltopic).toString('hex').substr(fsq._split_topic_at));
             }
             else
             {
                 expect(rmulti).to.equal(false);
                 expect(info.topic).to.equal('\0foo');
                 expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-                expect(info.fname.lastIndexOf(new Buffer('\0foo').toString('hex') + '@', 0)).to.equal(0);
+                expect(info.fname.lastIndexOf(Buffer.from('\0foo').toString('hex') + '@', 0)).to.equal(0);
                 expect(info.topic_path).to.equal(undefined);
                 expect(data.toString('utf8')).to.equal('bar');
             }

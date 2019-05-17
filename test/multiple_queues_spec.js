@@ -111,7 +111,7 @@ describe('multiple queues (use_disruptor=' + use_disruptor + ')', function ()
                             expect(info.single).to.equal(get_single);
                         }
                         expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
-                        expect(info.fname.lastIndexOf(new Buffer('foo').toString('hex') + '@', 0)).to.equal(0);
+                        expect(info.fname.lastIndexOf(Buffer.from('foo').toString('hex') + '@', 0)).to.equal(0);
 
                         checksum += sum(data);
 
@@ -237,7 +237,7 @@ describe('multiple queues (use_disruptor=' + use_disruptor + ')', function ()
         if (single_supported)
         {
             publish_to_queues('single', num_queues, num_messages, max_message_size, true);
-            publish_to_queues('mixed', num_queues, num_messages,  max_message_size,
+            publish_to_queues('mixed', num_queues, num_messages, max_message_size,
             function ()
             {
                 return Math.random() < 0.5;

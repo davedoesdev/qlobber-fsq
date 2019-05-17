@@ -1,7 +1,7 @@
 {
   "name": "qlobber-fsq",
   "description": "Shared file system queue. Supports pub-sub, work queues, wildcards, multi-process and distributed use.",
-  "version": "11.0.8",
+  "version": "11.0.9",
   "homepage": "https://github.com/davedoesdev/qlobber-fsq",
   "author": {
     "name": "David Halls",
@@ -19,22 +19,22 @@
   "main": "index.js",
   "scripts": {
     "test": "grunt lint test",
-    "ci-test-6": "grunt lint test",
     "ci-test-8": "grunt lint test",
-    "ci-test-10": "grunt lint && grunt coverage --getdents_size=1024 --disruptor --napi-modules && grunt coveralls",
-    "ci-test-stress-6": "grunt test-stress",
+    "ci-test-10": "grunt lint test",
+    "ci-test-12": "grunt lint && grunt coverage --getdents_size=1024 --disruptor && grunt coveralls",
     "ci-test-stress-8": "grunt test-stress",
-    "ci-test-stress-10": "node --napi-modules ./node_modules/.bin/grunt test-stress --disruptor",
-    "ci-test-multi-6": "grunt test-multi",
+    "ci-test-stress-10": "grunt test-stress",
+    "ci-test-stress-12": "grunt test-stress --disruptor",
     "ci-test-multi-8": "grunt test-multi",
-    "ci-test-multi-10": "node --napi-modules ./node_modules/.bin/grunt test-multi --disruptor",
-    "ci-test-multi-remote-6": "grunt test-multi --remote=localhost",
+    "ci-test-multi-10": "grunt test-multi",
+    "ci-test-multi-12": "grunt test-multi --disruptor",
     "ci-test-multi-remote-8": "grunt test-multi --remote=localhost",
     "ci-test-multi-remote-10": "grunt test-multi --remote=localhost",
+    "ci-test-multi-remote-12": "grunt test-multi --remote=localhost",
     "ci-test-win": "grunt lint test",
     "ci-test-stress-win": "grunt test-stress",
     "ci-test-multi-win": "grunt test-multi",
-    "bench": "grunt bench --rounds=1000 --size=1000 --ttl=60 --queues=10 --bucket_stamp_size=0 --ephemeral --disruptor --napi-modules"
+    "bench": "grunt bench --rounds=1000 --size=1000 --ttl=60 --queues=10 --bucket_stamp_size=0 --ephemeral --disruptor"
   },
   "directories": {
     "test": "test",
@@ -54,7 +54,7 @@
     "semver": "~6.0.0"
   },
   "optionalDependencies": {
-    "@davedoesdev/fs-ext": "~1.2.2",
+    "@davedoesdev/fs-ext": "~1.2.3",
     "getdents": "~1.0.5",
     "shared-memory-disruptor": "~2.0.3"
   },
@@ -64,15 +64,15 @@
     "grunt-mocha-test": "~0.13.3",
     "grunt-apidox": "~2.0.1",
     "grunt-exec": "~3.0.0",
-    "mocha": "~6.1.2",
+    "mocha": "~6.1.4",
     "chai": "~4.2.0",
-    "nyc": "~13.3.0",
+    "nyc": "~14.1.1",
     "coveralls": "~3.0.3",
     "b": "git://github.com/davedoesdev/b.git",
     "rimraf": "~2.6.3",
     "lsof": "~0.1.0",
-    "yargs": "~13.2.2",
-    "cp-remote": "~0.1.7",
+    "yargs": "~13.2.4",
+    "cp-remote": "~0.2.0",
     "babel-eslint": "~10.0.1"
   },
   "engines": {

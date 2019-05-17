@@ -1,6 +1,12 @@
 environment:
   REQUIRE_SINGLE: true
   matrix:
+    - nodejs_version: "12"
+      TARGET: test
+    - nodejs_version: "12"
+      TARGET: test-stress
+    - nodejs_version: "12"
+      TARGET: test-multi
     - nodejs_version: "10"
       TARGET: test
     - nodejs_version: "10"
@@ -12,12 +18,6 @@ environment:
     - nodejs_version: "8"
       TARGET: test-stress
     - nodejs_version: "8"
-      TARGET: test-multi
-    - nodejs_version: "6"
-      TARGET: test
-    - nodejs_version: "6"
-      TARGET: test-stress
-    - nodejs_version: "6"
       TARGET: test-multi
 
 install:
