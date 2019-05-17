@@ -6,6 +6,7 @@ Shared file system queue for Node.js.
 - Supports pub-sub and work queues.
 - Supports local file system for multi-core use.
 - Tested with [FraunhoferFS (BeeGFS)](http://www.fhgfs.com/) and [CephFS](http://ceph.com/ceph-storage/file-system/) for distributed use.
+- **Note:** An alternative module, [`qlobber-pg`](https://github.com/davedoesdev/qlobber-pg), can be used when you need access from multiple hosts. It's API-compatible with `qlobber-fsq` and requires a PostgreSQL database.
 - Highly configurable.
 - Full set of unit tests, including stress tests.
 - Use as a backend-less alternative to [RabbitMQ](http://www.rabbitmq.com/), [Redis pub-sub](http://redis.io/topics/pubsub) etc.

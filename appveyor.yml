@@ -1,33 +1,33 @@
 environment:
   REQUIRE_SINGLE: true
   matrix:
-    - nodejs_version: "12"
+    - nodejs_version: "12.2.0"
       TARGET: test
-    - nodejs_version: "12"
+    - nodejs_version: "12.2.0"
       TARGET: test-stress
-    - nodejs_version: "12"
+    - nodejs_version: "12.2.0"
       TARGET: test-multi
-    - nodejs_version: "10"
+    - nodejs_version: "10.15.3"
       TARGET: test
-    - nodejs_version: "10"
+    - nodejs_version: "10.15.3"
       TARGET: test-stress
-    - nodejs_version: "10"
+    - nodejs_version: "10.15.3"
       TARGET: test-multi
-    - nodejs_version: "8"
+    - nodejs_version: "8.16.0"
       TARGET: test
-    - nodejs_version: "8"
+    - nodejs_version: "8.16.0"
       TARGET: test-stress
-    - nodejs_version: "8"
+    - nodejs_version: "8.16.0"
       TARGET: test-multi
 
 install:
-  - ps: Install-Product node $env:nodejs_version
+  - ps: Remove-NodeJsInstallation $(Get-InstalledNodeJsVersion).version $(Get-InstalledNodeJsVersion).bitness
+  - ps: cmd /c start /wait msiexec /i $(Get-NodeJsInstallPackage $env:nodejs_version x64) /q
+  - node --version
+  - npm --version
   - npm install
 
 test_script:
-  - node --version
-  - npm --version
-  - npm install fs-ext
   - npm run ci-%TARGET%-win
 
 build: off
