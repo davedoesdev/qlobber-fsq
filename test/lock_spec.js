@@ -43,16 +43,16 @@ describe('single message lock behaviour', function ()
             fs.open(fname, constants.O_RDWR, function (err, fd2)
             {
                 if (err) { return cb(err); }
-                fs.flock(fd, 'exnb', function (err)
+                fsext.flock(fd, 'exnb', function (err)
                 {
                     if (err) { return cb(err); }
-                    fs.flock(fd2, 'exnb', function (err)
+                    fsext.flock(fd2, 'exnb', function (err)
                     {
                         expect(err.code).to.equal(process.platform === 'win32' ? 'EWOULDBLOCK' : 'EAGAIN');
                         fs.close(fd, function (err)
                         {
                             if (err) { return cb(err); }
-                            fs.flock(fd2, 'exnb', function (err)
+                            fsext.flock(fd2, 'exnb', function (err)
                             {
                                 if (err) { return cb(err); }
                                 fs.close(fd2, cb);
@@ -72,7 +72,7 @@ describe('single message lock behaviour', function ()
             fs.open(fname, constants.O_RDWR, function (err, fd2)
             {
                 if (err) { return cb(err); }
-                fs.flock(fd, 'exnb', function (err)
+                fsext.flock(fd, 'exnb', function (err)
                 {
                     if (err) { return cb(err); }
                     var stream = fs.createReadStream(null,
@@ -123,10 +123,10 @@ describe('single message lock behaviour', function ()
 
                                 function unlock()
                                 {
-                                    fs.flock(fd, 'un', function (err)
+                                    fsext.flock(fd, 'un', function (err)
                                     {
                                         if (err) { return cb(err); }
-                                        fs.flock(fd2, 'exnb', function (err)
+                                        fsext.flock(fd2, 'exnb', function (err)
                                         {
                                             if (err) { return cb(err); }
 

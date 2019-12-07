@@ -3,7 +3,6 @@
          fsq: false,
          expect: false,
          msg_dir: false,
-         fs: false,
          QlobberFSQ: false,
          fsq_dir: false,
          flags: false,
@@ -246,28 +245,30 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         cb();
     });
 
-    var orig_ftruncate = fs.ftruncate,
-        orig_rename = fs.rename,
-        orig_close = fs.close,
-        orig_flock = fs.flock;
+    var orig_ftruncate, orig_rename, orig_close, orig_flock;
 
     function restore()
     {
-        fs.ftruncate = orig_ftruncate;
-        fs.rename = orig_rename;
-        fs.close = orig_close;
-        fs.flock = orig_flock;
+        fsq._fs.ftruncate = orig_ftruncate;
+        fsq._fs.rename = orig_rename;
+        fsq._fs.close = orig_close;
+        fsq._fsext.flock = orig_flock;
     }
 
     /*jslint unparam: true */
     beforeEach(function ()
     {
+        orig_ftruncate = fsq._fs.ftruncate;
+        orig_rename = fsq._fs.rename;
+        orig_close = fsq._fs.close;
+        orig_flock = fsq._fsext.flock;
+
         var busied_ftruncate = false,
             busied_rename = false,
             busied_close = false,
             busied_flock = false;
 
-        fs.ftruncate = function (fd, size, cb)
+        fsq._fs.ftruncate = function (fd, size, cb)
         {
             if (busied_ftruncate)
             {
@@ -279,7 +280,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             cb({ code: 'EBUSY' });
         };
 
-        fs.rename = function (src, dest, cb)
+        fsq._fs.rename = function (src, dest, cb)
         {
             if (busied_rename)
             {
@@ -298,7 +299,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             return;
         }
 
-        fs.close = function (fd, cb)
+        fsq._fs.close = function (fd, cb)
         {
             if (busied_close)
             {
@@ -310,7 +311,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             cb({ code: 'EBUSY' });
         };
 
-        fs.flock = function (fd, type, cb)
+        fsq._fsext.flock = function (fd, type, cb)
         {
             if (busied_flock)
             {

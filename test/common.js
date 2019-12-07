@@ -10,7 +10,6 @@
           wu: false,
           rimraf: false,
           fsq: true,
-          fs: false,
           expect: false,
           flags: false,
           retry_interval: false,
@@ -21,7 +20,7 @@
 
 try
 {
-    global.fs = require('@davedoesdev/fs-ext');
+    global.fsext = require('fs-ext');
     global.single_supported = true;
 }
 catch (ex)
@@ -30,9 +29,9 @@ catch (ex)
     {
         throw ex;
     }
-    global.fs = require('fs');
     global.single_supported = false;
 }
+global.fs = require('fs');
 global.path = require('path');
 global.crypto = require('crypto');
 global.os = require('os');

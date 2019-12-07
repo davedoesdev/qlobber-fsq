@@ -411,7 +411,7 @@ If you provide at least one `--remote=<host>` argument then the benchmark will b
 
     - If the Disruptor's elements aren't large enough to contain the message's metadata, the message won't be written  to the Disruptor and `cb` (below) will receive an error with a property `code` equal to the string `buffer-too-small`.
 
-    - However, if the Disruptor's elements aren't large enough for the message's payload, the message _will_ be written to disk. The amount of space availabe in the Disruptor for the payload can be found via the `ephemeral_size` property on the stream returned by this function. If your message won't fit and you don't want to write it to disk, emit an `error` event on the stream without ending it.
+    - However, if the Disruptor's elements aren't large enough for the message's payload, the message _will_ be written to disk. The amount of space available in the Disruptor for the payload can be found via the `ephemeral_size` property on the stream returned by this function. If your message won't fit and you don't want to write it to disk, emit an `error` event on the stream without ending it.
 
 - `{Function} [cb]` Optional function to call once the message has been written to the file system queue. This will be called after the message has been moved into its bucket and is therefore available to subscribers in any `QlobberFSQ` object scanning the queue. It will be passed the following arguments:
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.
