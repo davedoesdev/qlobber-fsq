@@ -255,7 +255,7 @@ function rabbitmq_tests(name, QCons, num_queues, rounds, msglen, retry_prob, exp
 
                     if (Object.keys(subs).length === 0)
                     {
-                        pq.drain = function ()
+                        pq.drain(function ()
                         {
                             //console.log('drained');
 
@@ -269,7 +269,7 @@ function rabbitmq_tests(name, QCons, num_queues, rounds, msglen, retry_prob, exp
                                     fsq.stop_watching(next);
                                 }, done);
                             }, 10 * 1000);
-                        };
+                        });
                     }
                 }
 
@@ -292,7 +292,7 @@ function rabbitmq_tests(name, QCons, num_queues, rounds, msglen, retry_prob, exp
                     q.push(i);
                 }
 
-                q.drain = function ()
+                q.drain(function ()
                 {
                     if (f)
                     {
@@ -302,7 +302,7 @@ function rabbitmq_tests(name, QCons, num_queues, rounds, msglen, retry_prob, exp
                     {
                         publish();
                     }
-                };
+                });
             });
         });
     });
