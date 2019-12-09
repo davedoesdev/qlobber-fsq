@@ -24,7 +24,7 @@ before_install:
   - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
   - ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
   - echo PATH=\"$(dirname "$(which python)"):\$PATH\" > ~/.bashrc.new
-  - echo . ~/.nvm/nvm.sh > ~/.bashrc.new
+  - echo . ~/.nvm/nvm.sh >> ~/.bashrc.new
   - cat ~/.bashrc >> ~/.bashrc.new
   - mv ~/.bashrc.new ~/.bashrc
   - cat ~/.bashrc
