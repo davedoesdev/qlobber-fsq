@@ -1,7 +1,7 @@
 {
   "name": "qlobber-fsq",
   "description": "Shared file system queue. Supports pub-sub, work queues, wildcards, multi-process and distributed use.",
-  "version": "12.0.0",
+  "version": "12.0.1",
   "homepage": "https://github.com/davedoesdev/qlobber-fsq",
   "author": {
     "name": "David Halls",
@@ -43,16 +43,16 @@
     "routing"
   ],
   "dependencies": {
-    "async": "^3.1.0",
+    "async": "^3.1.1",
     "graceful-fs": "^4.2.3",
     "qlobber": "^4.0.1",
     "wu": "^2.1.0",
-    "semver": "^6.3.0"
+    "semver": "^7.1.1"
   },
   "optionalDependencies": {
     "fs-ext": "^2.0.0",
     "getdents": "^2.0.0",
-    "shared-memory-disruptor": "^3.0.2"
+    "shared-memory-disruptor": "^3.0.3"
   },
   "devDependencies": {
     "grunt": "^1.0.4",
@@ -60,15 +60,15 @@
     "grunt-mocha-test": "^0.13.3",
     "grunt-apidox": "^2.0.7",
     "grunt-exec": "^3.0.0",
-    "mocha": "^6.2.2",
+    "mocha": "^7.0.0",
     "chai": "^4.2.0",
-    "nyc": "^14.1.1",
+    "nyc": "^15.0.0",
     "coveralls": "^3.0.9",
     "b": "git://github.com/davedoesdev/b.git",
     "rimraf": "^3.0.0",
     "lsof": "^0.1.0",
-    "yargs": "^15.0.2",
-    "cp-remote": "^0.2.0",
+    "yargs": "^15.1.0",
+    "cp-remote": "^0.2.1",
     "babel-eslint": "^10.0.3"
   },
   "engines": {
