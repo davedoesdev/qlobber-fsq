@@ -904,6 +904,57 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         });
     });
 
+    it('should not allow filters to modify qlobber matches', function (done)
+    {
+        fsq.stop_watching(function ()
+        {
+            var fsq2, count = 0;
+
+            /*jslint unparam: true */
+            function handler(data, info, cb)
+            {
+                expect(count).to.equal(2);
+
+                cb(null, function (err)
+                {
+                    fsq2.stop_watching(function ()
+                    {
+                        done(err);
+                    });
+                });
+            }
+            /*jslint unparam: false */
+
+            fsq2 = make_fsq(1, 0,
+            {
+                filter: function (info, handlers, cb)
+                {
+                    expect(info.topic).to.equal('foo');
+
+                    if (++count === 1)
+                    {
+                        handlers.delete(handler);
+                        return cb(null, false);
+                    }
+
+                    cb(null, true, handlers);
+                }
+            });
+
+            ignore_ebusy(fsq2);
+
+            fsq2.subscribe('foo', handler);
+
+            fsq2.on('start', function ()
+            {
+                fsq2.publish('foo', 'bar', function (err)
+                {
+                    if (err) { done(err); }
+                });
+            });
+        });
+    });
+
     it('should be able to set filter by property', function (done)
     {
         function handler1()
@@ -2660,68 +2711,72 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
         this.timeout(10 * 60 * 1000);
 
-        fsq.stop_watching(function ()
+        fsq.stop_watching(async function ()
         {
-            lsof.counters(function (open_before)
+            const open_before = await lsof();
+            /*jslint unparam: true */
+            async.timesSeries(num_queues, function (n, cb)
             {
-                /*jslint unparam: true */
-                async.timesSeries(num_queues, function (n, cb)
-                {
-                    var fsq = make_fsq(num_queues, n);
-                    ignore_ebusy(fsq, os.platform() === 'win32' ? 'EPERM' : null);
+                var fsq = make_fsq(num_queues, n);
+                ignore_ebusy(fsq, os.platform() === 'win32' ? 'EPERM' : null);
 
-                    fsq.on('start', function ()
-                    {
-                        cb(null, fsq);
-                    });
-                }, function (err, fsqs)
+                fsq.on('start', function ()
+                {
+                    cb(null, fsq);
+                });
+            }, function (err, fsqs)
+            {
+                if (err) { return done(err); }
+
+                expect(fsqs.length).to.equal(num_queues);
+
+                async.timesSeries(num_messages, function (n, cb)
+                {
+                    fsqs[0].publish('foo', 'bar', { ttl: 2 * 1000 }, cb);
+                }, function (err)
                 {
                     if (err) { return done(err); }
 
-                    expect(fsqs.length).to.equal(num_queues);
-
-                    async.timesSeries(num_messages, function (n, cb)
+                    setTimeout(function ()
                     {
-                        fsqs[0].publish('foo', 'bar', { ttl: 2 * 1000 }, cb);
-                    }, function (err)
-                    {
-                        if (err) { return done(err); }
-
-                        setTimeout(function ()
+                        async.each(fsqs, function (fsq, next)
                         {
-                            async.each(fsqs, function (fsq, next)
+                            fsq.subscribe('foo', function ()
                             {
-                                fsq.subscribe('foo', function ()
-                                {
-                                    throw new Error('should not be called');
-                                });
-                                fsq.force_refresh();
-                                next();
-                            }, function ()
-                            {
-                                setTimeout(function ()
-                                {
-                                    async.each(fsqs, function (fsq, cb)
-                                    {
-                                        fsq.stop_watching(cb);
-                                    }, function ()
-                                    {
-                                        check_empty(msg_dir, done, function ()
-                                        {
-                                            lsof.counters(function (open_after)
-                                            {
-                                                expect(open_after.open).to.equal(open_before.open);
-                                                done();
-                                            });
-                                        });
-                                    });
-                                }, 60 * 1000);
+                                throw new Error('should not be called');
                             });
-                        }, 2 * 1000);
-                    });
+                            fsq.force_refresh();
+                            next();
+                        }, function ()
+                        {
+                            setTimeout(function ()
+                            {
+                                async.each(fsqs, function (fsq, cb)
+                                {
+                                    fsq.stop_watching(cb);
+                                }, function ()
+                                {
+                                    check_empty(msg_dir, done, async function ()
+                                    {
+                                        const open_after = await lsof();
+                                        try
+                                        {
+                                            expect(open_after[0]).to.eql(open_before[0]);
+                                        }
+                                        catch (ex)
+                                        {
+                                            console.error(open_before[1], open_after[1]);
+                                            throw ex;
+                                        }
+                                        done();
+                                    });
+                                });
+                            }, 60 * 1000);
+                        });
+                    }, 2 * 1000);
                 });
-                /*jslint unparam: false */
             });
+            /*jslint unparam: false */
         });
     });
 

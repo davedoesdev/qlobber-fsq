@@ -41,7 +41,6 @@ global.child_process = require('child_process');
 global.rimraf = require('rimraf');
 global.async = require('async');
 global.wu = require('wu');
-global.lsof = require('lsof');
 global.constants = require('constants');
 global.expect = require('chai').expect;
 global.cp_remote = require('cp-remote');
@@ -61,6 +60,24 @@ global.default_options = {
 };
 
 var counters_before;
+
+const { lsof: list_open_files } = require('list-open-files');
+global.lsof = async function ()
+{
+    const all = (await list_open_files())[0].files;
+    return [all.filter(f => {
+        return f.type === 'DIR' ||
+               f.type === 'LINK' ||
+               f.type === 'REG' ||
+               f.type === 'PSXSHM';
+    }).map(f => {
+        return {
+            fd: f.fd,
+            type: f.type,
+            name: f.name
+        };
+    }), all];
+}
 
 if (argv.direct)
 {
@@ -123,13 +140,10 @@ beforeEach(function (done)
         {
             fsq = new QlobberFSQ(default_options);
             ignore_ebusy(fsq);
-            fsq.on('start', function ()
+            fsq.on('start', async function ()
             {
-                lsof.counters(function (counters)
-                {
-                    counters_before = counters;
-                    cb();
-                });
+                counters_before = await lsof();
+                cb();
             });
         }], done);
 });
@@ -138,13 +152,19 @@ afterEach(function (done)
 {
     this.timeout(10 * 60 * 1000);
 
-    fsq.stop_watching(function ()
+    fsq.stop_watching(async function ()
     {
-        lsof.counters(function (counters)
+        const counters_after = await lsof();
+        try
         {
-            expect(counters).to.eql(counters_before);
-            done();
-        });
+            expect(counters_after[0]).to.eql(counters_before[0]);
+        }
+        catch (ex)
+        {
+            console.error(counters_before[1], counters_after[1]);
+            throw ex;
+        }
+        done();
     });
 });
 
