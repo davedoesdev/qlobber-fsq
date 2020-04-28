@@ -64,7 +64,7 @@ var counters_before;
 const { lsof: list_open_files } = require('list-open-files');
 global.lsof = async function ()
 {
-    const all = (await list_open_files())[0].files;
+    const all = os.platform() === 'win32' ? [] : (await list_open_files())[0].files;
     return [all.filter(f => {
         return f.type === 'DIR' ||
                f.type === 'LINK' ||
