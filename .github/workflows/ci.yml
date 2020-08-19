@@ -1,0 +1,33 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+
+        strategy:
+            matrix:
+                node-version: [12, 14]
+                target: [lint, test, stress, disruptor, multi, remote, coverage]
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            - name: Use Node.js
+              uses: actions/setup-node@v2.1.0
+              with:
+                node-version: ${{ matrix.node-version }}
+
+            - name: Install
+              run: npm ci
+
+            - name: Run tests
+              run: npm run ci-${{ matrix.target }}
+
+            - name: Coveralls
+              if: matrix.target == 'coverage'
+              uses: coverallsapp/github-action@v1.1.1
+              with:
+                github-token: ${{ secrets.GITHUB_TOKEN }}

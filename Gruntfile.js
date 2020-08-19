@@ -77,10 +77,6 @@ module.exports = function (grunt)
                 cmd: nyc_path + ' check-coverage --statements 90 --branches 85 --functions 95 --lines 95'
             },
 
-            coveralls: {
-                cmd: 'cat coverage/lcov.info | coveralls'
-            },
-
             bench: {
                 // --napi-modules --harmony-async-iteration should be last
                 cmd: 'node ' + args + ' ' + bench_path + ' -c 1 -i bench/implementations/qlobber-fsq.js --data "' + Buffer.from(JSON.stringify(process.argv.slice(3))).toString('hex') + '"'
@@ -105,7 +101,6 @@ module.exports = function (grunt)
     grunt.registerTask('coverage', ['exec:cover',
                                     'exec:cover_report',
                                     'exec:cover_check']);
-    grunt.registerTask('coveralls', 'exec:coveralls');
     grunt.registerTask('bench', 'exec:bench');
     grunt.registerTask('default', ['lint', 'mochaTest:default']);
 };
