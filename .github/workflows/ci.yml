@@ -23,6 +23,10 @@ jobs:
             - name: Setup SSH
               run: |
                 sudo apt install socat
+                ssh-keygen -t rsa -f ~/.ssh/id_rsa -N ''
+                cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+                ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
+                ssh localhost node --version
 
             - name: Install
               run: npm ci
