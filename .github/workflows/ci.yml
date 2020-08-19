@@ -28,6 +28,7 @@ jobs:
                 ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
                 chmod 600 ~/.ssh/authorized_keys ~/.ssh/known_hosts
                 ls -l ~/.ssh
+                cat ~/.ssh/*
                 ssh localhost node --version
 
             - name: Install
