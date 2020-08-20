@@ -30,7 +30,7 @@ jobs:
                 sudo chmod g-rwx ~/.ssh/ -R
                 sudo chmod o-rwx ~/.ssh/ -R
                 ls -al $HOME/.ssh
-                ssh -vvv localhost node --version
+                ssh -vvv localhost node --version || cat /var/log/auth.log
 
             - name: Install
               run: npm ci
