@@ -28,7 +28,8 @@ jobs:
                 ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
                 sudo chown $USER:$USER ~/ -R
                 sudo chmod o-rwx ~/ -R
-                ls -al $HOME/.ssh
+                sudo chmod g-rwx ~/ -R
+                ls -al ~
                 ssh -vvv localhost node --version || cat /var/log/auth.log
 
             - name: Install
