@@ -27,7 +27,8 @@ jobs:
                 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
                 ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
                 sudo chown $USER:$USER ~/.ssh/ -R
-                sudo chmod g-rwx o-rwx ~/.ssh/ -R
+                sudo chmod g-rwx ~/.ssh/ -R
+                sudo chmod o-rwx ~/.ssh/ -R
                 ls -al $HOME/.ssh
                 ssh -vvv localhost node --version
 
