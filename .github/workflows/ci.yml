@@ -27,10 +27,8 @@ jobs:
                 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
                 ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
                 sudo chown $USER:$USER ~/ -R
-                sudo chmod o-rwx ~/ -R
-                sudo chmod g-rwx ~/ -R
-                ls -al ~
-                ssh -vvv localhost node --version || cat /var/log/auth.log
+                sudo chmod go-rwx ~/ -R
+                ssh localhost node --version
 
             - name: Install
               run: npm ci
