@@ -28,8 +28,7 @@ jobs:
                 ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
                 sudo chown $USER:$USER ~/ -R
                 sudo chmod go-rwx ~/ -R
-                echo $PATH
-                ssh localhost 'echo $PATH'
+                echo "PATH=$PATH" >> ~/.bashrc
                 ssh localhost node --version
 
             - name: Install
