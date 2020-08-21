@@ -29,6 +29,7 @@ jobs:
                 sudo chown $USER:$USER ~/ -R
                 sudo chmod go-rwx ~/ -R
                 echo "PATH=$PATH" >> ~/.bashrc
+                cat ~/.bashrc
                 ssh localhost node --version
 
             - name: Install
