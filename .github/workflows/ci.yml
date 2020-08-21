@@ -30,8 +30,7 @@ jobs:
                 echo 'PermitUserEnvironment yes' | sudo dd oflag=append conv=notrunc of=/etc/ssh/sshd_config
                 sudo chown $USER:$USER ~/ -R
                 sudo chmod go-rwx ~/ -R
-                cat ~/.ssh/environment
-                cat /etc/ssh/sshd_config
+                sudo systemctl restart ssh
                 ssh localhost node --version
 
             - name: Install
