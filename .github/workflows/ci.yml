@@ -28,7 +28,7 @@ jobs:
                 ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
                 sudo chown $USER:$USER ~/ -R
                 sudo chmod go-rwx ~/ -R
-                nvm alias default "$(nvm current)"
+                echo $PATH
                 ssh localhost node --version
 
             - name: Install
