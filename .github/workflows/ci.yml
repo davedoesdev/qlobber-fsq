@@ -26,10 +26,10 @@ jobs:
                 ssh-keygen -t rsa -f ~/.ssh/id_rsa -N ''
                 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
                 ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
+                echo "PATH=$PATH" >> ~/.ssh/environment
+                echo 'PermitUserEnvironment yes' | sudo dd oflag=append conv=notrunc of=/etc/ssh/sshd_config
                 sudo chown $USER:$USER ~/ -R
                 sudo chmod go-rwx ~/ -R
-                echo "PATH=$PATH" >> ~/.bashrc
-                cat ~/.bashrc
                 ssh localhost node --version
 
             - name: Install
