@@ -171,8 +171,9 @@ afterEach(function (done)
                 catch (ex)
                 {
                     console.error(counters_before[1], counters_after[1]);
-                    done(ex);
+                    return done(ex);
                 }
+                done();
             }, 60000);
         }
         done();
