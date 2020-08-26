@@ -154,15 +154,26 @@ afterEach(function (done)
 
     fsq.stop_watching(async function ()
     {
-        const counters_after = await lsof();
+        let counters_after = await lsof();
         try
         {
             expect(counters_after[0]).to.eql(counters_before[0]);
         }
         catch (ex)
         {
-            console.error(counters_before[1], counters_after[1]);
-            throw ex;
+            return setTimeout(async function ()
+            {
+                counters_after = await lsof();
+                try
+                {
+                    expect(counters_after[0]).to.eql(counters_before[0]);
+                }
+                catch (ex)
+                {
+                    console.error(counters_before[1], counters_after[1]);
+                    done(ex);
+                }
+            }, 60000);
         }
         done();
     });
