@@ -15,6 +15,12 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v2
 
+            - name: Update APT
+              run: sudo apt update
+
+            - name: Install OS dependencies
+              run: sudo apt install socat
+
             - name: Use Node.js
               uses: actions/setup-node@v2
               with:
@@ -22,18 +28,24 @@ jobs:
 
             - name: Setup SSH
               run: |
-                sudo apt install socat
                 ssh-keygen -t rsa -f ~/.ssh/id_rsa -N ''
                 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
                 ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
-                echo "PATH=$PATH" >> ~/.ssh/environment
-                echo 'PermitUserEnvironment yes' | sudo dd oflag=append conv=notrunc of=/etc/ssh/sshd_config
-                sudo chown $USER:$USER ~/ -R
-                sudo chmod go-rwx ~/ -R
-                sudo systemctl restart ssh
-                ssh localhost node --version
+                chmod 600 ~/.ssh/*
+                chmod 700 ~/.ssh
+                chmod 755 ~/
 
-            - name: Install
+            - name: Check versions
+              run: |
+                test "$(node --version | cut -d . -f 1)" = "v${{ matrix.node-version }}"
+                echo "PATH=\"$(dirname "$(which node)"):\$PATH\"" > ~/.bashrc.new
+                cat ~/.bashrc >> ~/.bashrc.new
+                mv ~/.bashrc.new ~/.bashrc
+                node_ver="$(ssh localhost node --version)"
+                echo "Node $node_ver"
+                test "$(echo "$node_ver" | cut -d . -f 1)" = "v${{ matrix.node-version }}"
+
+            - name: Install packages
               run: npm install
 
             - name: Run tests
