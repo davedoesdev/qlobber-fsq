@@ -77,7 +77,7 @@ fsq.on('start', function ()
     process.send({ type: 'ready' });
 });
 
-process.on('message', function (msg)
+process.on('message', function (unused_msg)
 {
     async.timesSeries(options.rounds, function (r, cb)
     {

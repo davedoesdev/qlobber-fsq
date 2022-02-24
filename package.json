@@ -1,7 +1,7 @@
 {
   "name": "qlobber-fsq",
   "description": "Shared file system queue. Supports pub-sub, work queues, wildcards, multi-process and distributed use.",
-  "version": "12.0.6",
+  "version": "12.0.7",
   "homepage": "https://github.com/davedoesdev/qlobber-fsq",
   "author": {
     "name": "David Halls",
@@ -19,16 +19,11 @@
   "main": "index.js",
   "scripts": {
     "test": "grunt lint test",
-    "ci-lint": "grunt lint",
-    "ci-test": "grunt test",
-    "ci-stress": "grunt test-stress",
-    "ci-disruptor": "grunt test-stress --disruptor",
-    "ci-multi": "grunt test-multi",
-    "ci-remote": "grunt test-multi --remote=localhost",
-    "ci-coverage": "grunt coverage --getdents_size=1024 --disruptor",
-    "ci-win": "grunt lint test",
-    "ci-win-stress": "grunt test-stress",
-    "ci-win-multi": "grunt test-multi",
+    "stress": "grunt test-stress",
+    "multi": "grunt test-multi",
+    "disruptor": "grunt test-stress --disruptor",
+    "remote": "grunt test-multi --remote=localhost",
+    "coverage": "grunt coverage --getdents_size=1024 --disruptor",
     "bench": "grunt bench --rounds=1000 --size=1000 --ttl=60 --queues=10 --bucket_stamp_size=0 --ephemeral --disruptor"
   },
   "directories": {
@@ -42,34 +37,41 @@
     "routing"
   ],
   "dependencies": {
-    "async": "^3.2.0",
-    "graceful-fs": "^4.2.4",
-    "qlobber": "^5.0.1",
+    "async": "^3.2.3",
+    "graceful-fs": "^4.2.9",
+    "qlobber": "^6.0.0",
     "wu": "^2.1.0",
-    "semver": "^7.3.2"
+    "semver": "^7.3.5"
   },
   "optionalDependencies": {
     "fs-ext": "^2.0.0",
-    "getdents": "^2.0.7",
-    "shared-memory-disruptor": "^3.0.7"
+    "getdents": "^2.0.10",
+    "shared-memory-disruptor": "^3.0.10"
   },
   "devDependencies": {
-    "grunt": "^1.3.0",
-    "grunt-eslint": "^23.0.0",
+    "grunt": "^1.4.1",
+    "grunt-eslint": "^24.0.0",
     "grunt-mocha-test": "^0.13.3",
-    "grunt-apidox": "^2.0.10",
+    "grunt-apidox": "^2.0.16",
     "grunt-exec": "^3.0.0",
-    "mocha": "^8.1.1",
-    "chai": "^4.2.0",
-    "nyc": "^15.1.0",
+    "mocha": "^9.2.1",
+    "c8": "^7.11.0",
+    "chai": "^4.3.6",
     "b": "git://github.com/davedoesdev/b.git",
     "rimraf": "^3.0.2",
     "list-open-files": "^1.1.0",
-    "yargs": "^15.4.1",
-    "cp-remote": "^0.2.3",
-    "babel-eslint": "^10.1.0"
+    "yargs": "^17.3.1",
+    "cp-remote": "^0.2.6"
   },
   "engines": {
     "node": ">= 12"
+  },
+  "overrides": {
+    "jsdoctypeparser": {
+      "lodash": "^4.17.21"
+    },
+    "dox": {
+      "markdown-it": "^12.3.2"
+    }
   }
 }

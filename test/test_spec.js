@@ -1,11 +1,10 @@
-/*global describe: false,
-         it: false,
-         fsq: false,
+/*global fsq: true,
+         fs: false,
+         get_message_files: false,
          expect: false,
          msg_dir: false,
          QlobberFSQ: false,
          fsq_dir: false,
-         flags: false,
          default_options: false,
          check_empty: false,
          async: false,
@@ -14,15 +13,11 @@
          crypto: false,
          lsof: false,
          rimraf: false,
-         beforeEach: false,
-         afterEach: false,
          ignore_ebusy: false,
-         retry_interval: false,
          util: false,
          single_supported: false,
          os: false,
          argv: false*/
-/*jslint node: true, nomen: true, bitwise: true, todo: true */
 "use strict";
 
 /*var orig_error = console.error;
@@ -47,7 +42,7 @@ function read_all(s, cb)
 
     s.on('readable', function ()
     {
-        while (true)
+        while (true) // eslint-disable-line no-constant-condition
         {
             var data = this.read();
             if (data === null) { break; }
@@ -114,7 +109,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
         if (use_disruptor)
         {
-            function make_buckets()
+            const make_buckets = () =>
             {
                 for (var b = 0; b < r.num_buckets; b += 1)
                 {
@@ -126,7 +121,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                                    true,
                                    false).release();
                 }
-            }
+            };
 
             if (i === 0)
             {
@@ -139,7 +134,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     fsq_started = false,
                     onstart = null;
 
-                function check()
+                const check = () =>
                 {
                     if (fsq_stopped && fsq_started && onstart)
                     {
@@ -148,7 +143,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                             onstart.call(r);
                         });
                     }
-                }
+                };
 
                 fsq.stop_watching(function ()
                 {
@@ -255,7 +250,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         fsq._fsext.flock = orig_flock;
     }
 
-    /*jslint unparam: true */
     beforeEach(function ()
     {
         orig_ftruncate = fsq._fs.ftruncate;
@@ -323,7 +317,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             cb({ code: 'EBUSY' });
         };
     });
-    /*jslint unparam: false */
 
     afterEach(restore);
 
@@ -755,7 +748,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             }
         });
 
-        /*jslint unparam: true */
         fsq.subscribe('foo', function (data, info, cb)
         {
             expect(info.single).to.equal(single_supported);
@@ -778,7 +770,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 if (err) { done(err); }
             });
         });
-        /*jslint unparam: false */
     });
 
     if (single_supported)
@@ -832,7 +823,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         {
             var count = 0;
 
-            /*jslint unparam: true */
             fsq.subscribe('foo', function (data, info, cb)
             {
                 count += 1;
@@ -846,7 +836,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     cb(null, done);
                 }
             });
-            /*jslint unparam: false */
 
             fsq.publish('foo', 'bar', { single: true }, function (err)
             {
@@ -866,7 +855,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             var fsq2; 
 
-            /*jslint unparam: true */
             function handler2(data, info, cb)
             {
                 cb(null, function (err)
@@ -877,7 +865,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     });
                 });
             }
-            /*jslint unparam: false */
 
             fsq2 = make_fsq(1, 0,
             {
@@ -910,7 +897,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         {
             var fsq2, count = 0;
 
-            /*jslint unparam: true */
             function handler(data, info, cb)
             {
                 expect(count).to.equal(2);
@@ -923,7 +909,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     });
                 });
             }
-            /*jslint unparam: false */
 
             fsq2 = make_fsq(1, 0,
             {
@@ -1024,7 +1009,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             var fsq2; 
 
-            /*jslint unparam: true */
             function handler2(data, info, cb)
             {
                 cb(null, function (err)
@@ -1035,7 +1019,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     });
                 });
             }
-            /*jslint unparam: false */
 
             fsq2 = make_fsq(1, 0,
             {
@@ -1124,7 +1107,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 called = true;
             },
 
-            function (info, handlers, cb)
+            function (unused_info, unused_handlers, unused_cb)
             {
                 throw new Error('should not be called');
             }
@@ -1152,7 +1135,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 called = true;
             },
 
-            function (info, handlers, cb)
+            function (unused_info, unused_handlers, unused_cb)
             {
                 throw new Error('should not be called');
             }
@@ -1170,12 +1153,10 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         {
             fsq.stop_watching(function ()
             {
-                /*jslint unparam: true */
                 function handler(data, info, cb)
                 {
                     cb('dummy failure');
                 }
-                /*jslint unparam: false */
 
                 var filter_called = false,
                     fsq2 = make_fsq(1, 0,
@@ -1200,7 +1181,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
                 fsq2.subscribe('foo', handler);
 
-                /*jslint unparam: true */
                 fsq2.subscribe('foo', function (data, info, cb)
                 {
                     if (filter_called)
@@ -1218,7 +1198,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                         cb('dummy failure2');
                     }
                 });
-                /*jslint unparam: false */
 
                 fsq2.on('start', function ()
                 {
@@ -1236,12 +1215,10 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             fsq.stop_watching(function ()
             {
-                /*jslint unparam: true */
                 function handler(data, info, cb)
                 {
                     cb('dummy failure');
                 }
-                /*jslint unparam: false */
 
                 var filter_called = false,
                     fsq2 = make_fsq(2, 0,
@@ -1269,7 +1246,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
                 fsq2.subscribe('foo', handler);
 
-                /*jslint unparam: true */
                 fsq3.subscribe('foo', function (data, info, cb)
                 {
                     if (filter_called)
@@ -1290,7 +1266,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                         cb('dummy failure2');
                     }
                 });
-                /*jslint unparam: false */
 
                 function start()
                 {
@@ -1457,12 +1432,10 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             done();
         });
 
-        /*jslint unparam: true */
         fsq.subscribe('foo', function (data, info, cb)
         {
             cb('dummy failure');
         });
-        /*jslint unparam: false */
 
         fsq.publish('foo', 'bar', { single : single_supported }, function (err)
         {
@@ -1482,7 +1455,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             ignore_ebusy(fsq2);
 
-            /*jslint unparam: true */
             fsq2.subscribe('foo', function (data, info, cb)
             {
                 count += 1;
@@ -1503,7 +1475,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     cb('dummy failure');
                 }
             });
-            /*jslint unparam: false */
      
             fsq2.on('start', function ()
             {
@@ -1523,7 +1494,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
         var count = 0;
 
-        /*jslint unparam: true */
         function handler(data, info, cb)
         {
             count += 1;
@@ -1546,7 +1516,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 }, 2000);
             });
         }
-        /*jslint unparam: false */
 
         fsq.subscribe('foo', handler);
         
@@ -1562,7 +1531,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
         var count = 0;
 
-        /*jslint unparam: true */
         function handler(data, info, cb)
         {
             count += 1;
@@ -1588,7 +1556,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 });
             }
         }
-        /*jslint unparam: false */
 
         fsq.subscribe('foo', function (data, info, cb)
         {
@@ -1612,7 +1579,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
         var count = 0;
 
-        /*jslint unparam: true */
         function handler(data, info, cb)
         {
             count += 1;
@@ -1648,7 +1614,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 });
             }
         }
-        /*jslint unparam: false */
 
         fsq.subscribe('foo', function (data, info, cb)
         {
@@ -1684,7 +1649,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             ignore_ebusy(fsq2);
 
-            /*jslint unparam: true */
             fsq2.subscribe('foo', function (data, info, cb)
             {
                 cb(null, function ()
@@ -1714,7 +1678,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     }
                 });
             });
-            /*jslint unparam: false */
 
             fsq2.on('start', function ()
             {
@@ -1739,7 +1702,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         var count_multi = 0,
             count_single = single_supported ? 0 : 2;
 
-        /*jslint unparam: true */
         fsq.subscribe('foo', function (data, info, cb)
         {
             cb(null, function ()
@@ -1763,9 +1725,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 }
             });
         });
-        /*jslint unparam: false */
 
-        /*jslint unparam: true */
         async.timesSeries(2, function (n, cb)
         {
             async.eachSeries([true, false], function (single, cb)
@@ -1779,7 +1739,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         {
             if (err) { done(err); }
         });
-        /*jslint unparam: false */
     });
 
     it('should default to putting messages in module directory', function (done)
@@ -2034,7 +1993,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     var fsq2 = make_fsq(1, 0);
                     ignore_ebusy(fsq2);
 
-                    /*jslint unparam: true */
                     fsq2.subscribe('foo', function (data, info, cb)
                     {
                         cb(null, function ()
@@ -2042,7 +2000,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                             fsq2.stop_watching(done);
                         });
                     });
-                    /*jslint unparam: false */
                 });
             });
         });
@@ -2060,7 +2017,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
                     fsq2.on('start', function ()
                     {
-                        /*jslint unparam: true */
                         fsq2.subscribe('foo', function (data, info, cb)
                         {
                             cb(null, function ()
@@ -2068,7 +2024,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                                 fsq2.stop_watching(done);
                             });
                         });
-                        /*jslint unparam: false */
                     });
                 });
             });
@@ -2189,14 +2144,12 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
         util.inherits(CheckStream, stream_mod.Writable);
 
-        /*jslint unparam: true */
         CheckStream.prototype._write = function (chunk, encoding, callback)
         {
             this._len += chunk.length;
             this._hash.update(chunk);
             callback();
         };
-        /*jslint unparam: false */
 
         function check(obj, cb)
         {
@@ -2213,7 +2166,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             }
         }
 
-        /*jslint unparam: true */
         function handler1(stream, info, cb)
         {
             var cs = new CheckStream();
@@ -2239,7 +2191,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             stream.pipe(cs);
         }
-        /*jslint unparam: false */
 
         handler1.accept_stream = true;
         fsq.subscribe('foo', handler1);
@@ -2256,7 +2207,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
     it('should not call the same handler with stream and data', function (done)
     {
-        /*jslint unparam: true */
         function handler(stream, info, cb)
         {
             expect(Buffer.isBuffer(stream)).to.equal(false);
@@ -2282,7 +2232,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 cb(null, done);
             });
         }
-        /*jslint unparam: false */
 
         handler.accept_stream = true;
 
@@ -2529,7 +2478,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
     it('should be able to change the number of random bytes at the end of filenames', function (done)
     {
-        /*jslint unparam: true */
         fsq.subscribe('foo', function (data, info)
         {
             var split = info.fname.split('+'), fsq2;
@@ -2553,7 +2501,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 });
             });
         });
-        /*jslint unparam: false */
 
         fsq.publish('foo', 'bar');
     });
@@ -2576,7 +2523,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             ignore_ebusy(fsq2);
 
-            /*jslint unparam: true */
             function handler (stream, info, cb)
             {
                 expect(in_call).to.equal(false);
@@ -2606,7 +2552,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     }, 5 * 1000);
                 }
             }
-            /*jslint unparam: false */
 
             handler.accept_stream = true;
             
@@ -2649,7 +2594,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             ignore_ebusy(fsq2);
 
-            /*jslint unparam: true */
             function handler(stream, info, cb)
             {
                 expect(in_call).to.be.at.most(9);
@@ -2679,7 +2623,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     }, 5 * 1000);
                 }
             }
-            /*jslint unparam: false */
             
             handler.accept_stream = true;
 
@@ -2714,7 +2657,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         fsq.stop_watching(async function ()
         {
             const open_before = await lsof();
-            /*jslint unparam: true */
             async.timesSeries(num_queues, function (n, cb)
             {
                 var fsq = make_fsq(num_queues, n);
@@ -2776,7 +2718,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     }, 2 * 1000);
                 });
             });
-            /*jslint unparam: false */
         });
     });
 
@@ -2788,7 +2729,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             restore();
 
-            /*jslint unparam: true */
             fsq.subscribe('foo', function (data, info, cb)
             {
                 console.log(info);
@@ -2812,7 +2752,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     }
                 }, 30 * 1000);
             });
-            /*jslint unparam: false */
 
             fsq.publish('foo', 'bar', { single: true, ttl: 5000 }, function (err)
             {
@@ -2854,7 +2793,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             {
                 num = Math.pow(base, chars) * 15;
 
-                /*jslint unparam: true */
                 fsq2.subscribe('foo', function (data, info)
                 {
                     var mdir = path.join(path.dirname(info.path), '..');
@@ -2891,7 +2829,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                         });
                     });
                 });
-                /*jslint unparam: false */
             }
 
             if (base === undefined)
@@ -2932,12 +2869,10 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
     {
         var orig_mkdir = fs.mkdir, fsq2;
 
-        /*jslint unparam: true */
         fs.mkdir = function (dir, cb)
         {
             cb('dummy error');
         };
-        /*jslint unparam: false */
 
         fsq2 = make_fsq(2, 1);
         ignore_ebusy(fsq2);
@@ -2978,7 +2913,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             }
         });
 
-        /*jslint unparam: true */
         fsq.subscribe('foo', function (data, info, cb)
         {
             if (!info.single)
@@ -2993,7 +2927,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             expect(info.single).to.equal(true); // we throw multi away on error
             cb(null, done);
         });
-        /*jslint unparam: false */
 
         fsq.publish('foo', 'bar', function (err)
         {
@@ -3086,7 +3019,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             var fsq2 = make_fsq(1, 0, { single: false }), called = false;
             ignore_ebusy(fsq2);
 
-            fsq2.subscribe('foo', function (data, info, cb)
+            fsq2.subscribe('foo', function (data, info, unused_cb)
             {
                 expect(info.topic).to.equal('foo');
                 expect(data.toString('utf8')).to.equal('bar');
@@ -3352,7 +3285,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             {
                 var streams = [];
 
-                function handler(s, info)
+                function handler(s, unused_info)
                 {
                     streams.push(s);
 
@@ -3420,7 +3353,6 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                 // time increasing while publishing
                 for (i = 0; i < n; i += 1)
                 {
-                    /*jshint laxbreak: true */
                     ttls_out.push(Math.round(
 
                     Math.random() * 18 * 60 // random mins up to 18 hour period
@@ -3989,7 +3921,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             it('should support unsubscribing from delayed existing messages (by topic)',
             function (done)
             {
-                unsub_delayed_existing(function (fsq2, handler, handler2)
+                unsub_delayed_existing(function (fsq2, unused_handler, unused_handler2)
                 {
                     fsq2.unsubscribe('foo');
                 }, done);
@@ -3998,7 +3930,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             it('should support unsubscribing from delayed existing messages (all)',
             function (done)
             {
-                unsub_delayed_existing(function (fsq2, handler, handler2)
+                unsub_delayed_existing(function (fsq2, unused_handler, unused_handler2)
                 {
                     fsq2.unsubscribe();
                 }, done);
@@ -4042,7 +3974,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             fsq.subscribe('foo', handler, function (err)
             {
                 if (err) { return done(err); }
-                fsq.publish('foo', 'bar', function (err, info)
+                fsq.publish('foo', 'bar', function (err, unused_info)
                 {
                     if (err) { done(err); }
                 });
@@ -4052,16 +3984,14 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
     it('should publish empty message', function (done)
     {
-        var pub_info;
-
-        fsq.subscribe('foo', function handler(data, info, cb)
+        fsq.subscribe('foo', function handler(data, info)
         {
             expect(info.topic).to.equal('foo');
             expect(data.length).to.equal(0);
             done();
         });
 
-        fsq.publish('foo', function (err, info)
+        fsq.publish('foo', function (err)
         {
             if (err) { done(err); }
         }).end();

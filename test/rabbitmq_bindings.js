@@ -1,5 +1,3 @@
-/*globals global */
-/*jslint node: true */
 "use strict";
 
 global.rabbitmq_test_bindings = [

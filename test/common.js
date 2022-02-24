@@ -1,21 +1,19 @@
-/*globals global,
-          path: false,
+/*globals path: false,
           argv: false,
-          beforeEach: false,
-          afterEach: false,
           fsq_dir: false,
           constants: false,
           QlobberFSQ: false,
           async: false,
-          wu: false,
           rimraf: false,
           fsq: true,
           expect: false,
           flags: false,
+          os: false,
           retry_interval: false,
-          ignore_ebusy: false,
-          single_supported: false */
-/*jslint node: true, nomen: true, bitwise: true */
+          default_options: false,
+          fs: false,
+          lsof: false,
+          ignore_ebusy: false */
 "use strict";
 
 try
@@ -65,19 +63,21 @@ const { lsof: list_open_files } = require('list-open-files');
 global.lsof = async function ()
 {
     const all = os.platform() === 'win32' ? [] : (await list_open_files())[0].files;
-    return [all.filter(f => {
+    return [all.filter(f =>
+    {
         return f.type === 'DIR' ||
                f.type === 'LINK' ||
                f.type === 'REG' ||
                f.type === 'PSXSHM';
-    }).map(f => {
+    }).map(f =>
+    {
         return {
             fd: f.fd,
             type: f.type,
             name: f.name
         };
     }), all];
-}
+};
 
 if (argv.direct)
 {

@@ -1,6 +1,4 @@
-/*globals describe: false,
-          it: false,
-          fsq: false,
+/*globals fsq: false,
           async: false,
           QlobberFSQ: false,
           fsq_dir: false,
@@ -9,10 +7,8 @@
           msg_dir: false,
           sum: false,
           crypto: false,
-          beforeEach: false,
-          afterEach: false,
+          argv: false,
           single_supported: false */
-/*jslint node: true */
 "use strict";
 
 function multiple_queues(use_disruptor)
@@ -57,11 +53,8 @@ describe('multiple queues (use_disruptor=' + use_disruptor + ')', function ()
 
             fsq.stop_watching(function ()
             {
-                /*jslint unparam: true */
                 async.timesSeries(num_queues, function (n, cb)
                 {
-                    var num_disruptors;
-
                     function get_disruptor(bucket)
                     {
                         if (bucket < num_disruptors)
@@ -226,7 +219,6 @@ describe('multiple queues (use_disruptor=' + use_disruptor + ')', function ()
                         the_fsqs = fsqs;
                     });
                 });
-                /*jslint unparam: false */
             });
         });
     }

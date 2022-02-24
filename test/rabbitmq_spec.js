@@ -1,5 +1,4 @@
-/*globals it: false,
-          fsq: false,
+/*globals fsq: false,
           async: false,
           flags: false,
           expect: false,
@@ -12,7 +11,6 @@
           cp_remote: false,
           path: false,
           util: false,
-          describe: false,
           argv: false,
           QlobberFSQ: false,
           os: false,
@@ -22,7 +20,6 @@
           rabbitmq_expected_results_after_remove: false,
           rabbitmq_expected_results_after_remove_all: false,
           rabbitmq_expected_results_after_clear: false */
-/*jslint node: true, nomen: true */
 "use strict";
 
 function rabbitmq_tests(name, QCons, num_queues, rounds, msglen, retry_prob, expected, f)
@@ -136,7 +133,7 @@ function rabbitmq_tests(name, QCons, num_queues, rounds, msglen, retry_prob, exp
 
                             for (t in result)
                             {
-                                if (result.hasOwnProperty(t))
+                                if (result.hasOwnProperty(t)) // eslint-disable-line no-prototype-builtins
                                 {
                                     result[t].sort(topic_sort);
                                 }
@@ -358,7 +355,6 @@ function rabbitmq(prefix, QCons, queues, rounds, msglen, retry_prob)
         }, cb);
     });
 
-    /*jslint unparam: true */
     rabbitmq_tests(prefix + 'after_clear', QCons, queues, rounds, msglen, retry_prob, rabbitmq_expected_results_after_clear,
     function (fsqs, subs, assigned, unsubscribe, cb)
     {
@@ -371,7 +367,6 @@ function rabbitmq(prefix, QCons, queues, rounds, msglen, retry_prob)
             cb();
         });
     });
-    /*jslint unparam: false */
 }
 
 function rabbitmq2(prefix, QCons, queues, rounds, msglen)
@@ -426,13 +421,11 @@ function MPFSQBase(child)
         ths.emit('error', err);
     });
 
-    /*jslint unparam: true */
-    child.on('exit', function (code, signal)
+    child.on('exit', function (unused_code, unused_signal)
     {
          ths.emit('stop');
         //console.log('exit', ths._host, code, signal);
     });
-    /*jslint unparam: false */
 
     child.on('message', function (msg)
     {

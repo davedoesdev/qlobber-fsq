@@ -1,48 +1,42 @@
 /*jslint node: true */
 "use strict";
 
-var index = process.argv.indexOf('--napi-modules'),
-    args = index < 0 ? '' : process.argv.slice(index).join(' '),
-    path = require('path'),
-    mod_path = path.join('.', 'node_modules'),
-    bin_path = path.join(mod_path, '.bin'),
-    nyc_path = path.join(bin_path, 'nyc'),
-    grunt_path,
-    bench_path;
-
-if (process.platform === 'win32')
-{
-    grunt_path = path.join(mod_path, 'grunt', 'bin', 'grunt');
-    bench_path = path.join(mod_path, 'b', 'bin', 'bench');
-}
-else
-{
-    grunt_path = path.join(bin_path, 'grunt');
-    bench_path = path.join(bin_path, 'bench');
-}
+const c8 = "npx c8 -x Gruntfile.js -x 'test/**'";
 
 module.exports = function (grunt)
 {
     grunt.initConfig(
     {
         eslint: {
-            target: [ 'Gruntfile.js', 'index.js', 'lib/*.js', 'test/**/*.js', 'bench/**/*.js' ]
+            target: [
+                'Gruntfile.js',
+                'index.js',
+                'lib/*.js',
+                'test/**/*.js',
+                'bench/**/*.js'
+            ]
         },
 
         mochaTest: {
             default: {
-                src: ['test/common.js',
-                      'test/test_spec.js',
-                      'test/lock_spec.js']
+                src: [
+                    'test/common.js',
+                    'test/test_spec.js',
+                    'test/lock_spec.js'
+                ]
             },
             stress: {
-                src: ['test/common.js',
-                      'test/multiple_queues_spec.js']
+                src: [
+                    'test/common.js',
+                    'test/multiple_queues_spec.js'
+                ]
             },
             multi: {
-                src: ['test/common.js',
-                      'test/rabbitmq_bindings.js',
-                      'test/rabbitmq_spec.js']
+                src: [
+                    'test/common.js',
+                    'test/rabbitmq_bindings.js',
+                    'test/rabbitmq_spec.js'
+                ]
             },
             options: {
                 bail: true
@@ -63,29 +57,13 @@ module.exports = function (grunt)
             doxOptions: { skipSingleStar: true }
         },
 
-        exec: {
-            cover: {
-                // --napi-modules --harmony-async-iteration should be last
-                cmd: nyc_path + " -x Gruntfile.js -x \"" + path.join('test', '**') + "\" node " + args + " " + grunt_path + " test " + process.argv.slice(3).join(' ')
-            },
-
-            cover_report: {
-                cmd: nyc_path + ' report -r lcov'
-            },
-
-            cover_check: {
-                cmd: nyc_path + ' check-coverage --statements 90 --branches 85 --functions 95 --lines 95'
-            },
-
-            bench: {
-                // --napi-modules --harmony-async-iteration should be last
-                cmd: 'node ' + args + ' ' + bench_path + ' -c 1 -i bench/implementations/qlobber-fsq.js --data "' + Buffer.from(JSON.stringify(process.argv.slice(3))).toString('hex') + '"'
-            },
-
-            diagrams: {
-                cmd: 'dot diagrams/how_it_works.dot -Tsvg -odiagrams/how_it_works.svg'
-            }
-        }
+        exec: Object.fromEntries(Object.entries({
+            cover: `${c8} grunt test ${process.argv.slice(3).join(' ')}`,
+            cover_report: `${c8} report -r lcov`,
+            cover_check: `${c8} check-coverage --statements 90 --branches 85 --functions 95 --lines 95`,
+            bench: `npx bench -c 1 -i bench/implementations/qlobber-fsq.js --data "${Buffer.from(JSON.stringify(process.argv.slice(3))).toString('hex')}"`,
+            diagrams: 'dot diagrams/how_it_works.dot -Tsvg -odiagrams/how_it_works.svg'
+        }).map(([k, cmd]) => [k, { cmd, stdio: 'inherit' }]))
     });
     
     grunt.loadNpmTasks('grunt-eslint');

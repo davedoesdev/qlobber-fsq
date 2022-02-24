@@ -1,4 +1,3 @@
-/*jslint node: true */
 "use strict";
 
 var options = JSON.parse(Buffer.from(process.argv[2], 'hex')),

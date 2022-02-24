@@ -1,18 +1,24 @@
 environment:
   REQUIRE_SINGLE: true
   matrix:
-    - nodejs_version: "14.8.0"
-      TARGET: win
-    - nodejs_version: "14.8.0"
-      TARGET: win-stress
-    - nodejs_version: "14.8.0"
-      TARGET: win-multi
-    - nodejs_version: "12.18.3"
-      TARGET: win
-    - nodejs_version: "12.18.3"
-      TARGET: win-stress
-    - nodejs_version: "12.18.3"
-      TARGET: win-multi
+    - nodejs_version: "16.14.0"
+      TARGET: test
+    - nodejs_version: "16.14.0"
+      TARGET: stress
+    - nodejs_version: "16.14.0"
+      TARGET: multi
+    - nodejs_version: "14.19.0"
+      TARGET: test
+    - nodejs_version: "14.19.0"
+      TARGET: stress
+    - nodejs_version: "14.19.0"
+      TARGET: multi
+    - nodejs_version: "12.22.10"
+      TARGET: test
+    - nodejs_version: "12.22.10"
+      TARGET: stress
+    - nodejs_version: "12.22.10"
+      TARGET: multi
 
 install:
   - ps: Remove-NodeJsInstallation $(Get-InstalledNodeJsVersion).version $(Get-InstalledNodeJsVersion).bitness
@@ -22,6 +28,6 @@ install:
   - npm install
 
 test_script:
-  - npm run ci-%TARGET%
+  - npm run %TARGET%
 
 build: off

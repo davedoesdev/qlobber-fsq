@@ -1,3 +1,10 @@
+/*globals single_supported: false,
+          path: false,
+          os: false,
+          fs: false,
+          expect: false,
+          fsext: false,
+          constants: false */
 
 describe('single message lock behaviour', function ()
 {

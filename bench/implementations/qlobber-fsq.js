@@ -1,11 +1,9 @@
-/*global before: false */
 /*jslint node: true, nomen: true */
 "use strict";
 
 var child_process = require('child_process'),
     cp_remote = require('cp-remote'),
     path = require('path'),
-    fs = require('fs'),
     async = require('async'),
     rimraf = require('rimraf'),
     yargs = require('yargs'),
