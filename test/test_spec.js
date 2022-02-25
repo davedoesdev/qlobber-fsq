@@ -2985,7 +2985,12 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
         var s = fsq.publish('foo', function (err)
         {
-            expect(err.message).to.equal('dummy');
+            expect(err.message).to.be.oneOf([
+                'dummy',
+                // Node 12: Stream is destroyed with 'dummy' but the write to
+                // fs_stream is delayed until fs_stream is opened.
+                'Cannot call write after a stream was destroyed'
+            ]);
             expect(finished).to.equal(true);
             done();
         });
