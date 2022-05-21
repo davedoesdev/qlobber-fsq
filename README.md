@@ -331,7 +331,7 @@ If you provide at least one `--remote=<host>` argument then the benchmark will b
 
   - `{Integer} disruptor_spin_interval` If a Disruptor is shared across multiple buckets or multiple `QlobberFSQ` instances, contention can occur when publishing a message. In this case [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb) will try again until it succeeds. `disruptor_spin_interval` is the time (in milliseconds) to wait before retrying. Defaults to 0.
 
-  - `{Object} [direct_handler]` Object with three methods, used for transferring messages direct from publisher to subscribers without writing them to disk:
+  - `{Object} [direct_handler]` Object with the following methods, used for transferring messages direct from publisher to subscribers without writing them to disk:
 
     - `{Function (filename, direct)} get_stream_for_publish` Called by [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb) when truthy `options.direct` is passed to it instead of writing data to disk. This method receives the name of the file to which data would have been written plus the value of `options.direct` that was passed to [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb). Whatever it returns will be returned by the call to [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb).
 
