@@ -46,16 +46,16 @@ fsq.on('stop', function ()
 Or use the streaming interface to read and write messages:
 
 ```javascript
-var QlobberFSQ = require('qlobber-fsq').QlobberFSQ;
-var fsq = new QlobberFSQ({ fsq_dir: '/shared/fsq' });
+const { QlobberFSQ } = require('qlobber-fsq');
+const fsq = new QlobberFSQ({ fsq_dir: '/shared/fsq' });
 function handler(stream, info)
 {
-    var data = [];
+    const data = [];
 
     stream.on('readable', function ()
     {
-        var chunk = this.read();
-        if (chunk)
+        let chunk;
+        while (chunk = this.read())
         {
             data.push(chunk);
         }
@@ -63,9 +63,9 @@ function handler(stream, info)
 
     stream.on('end', function ()
     {
-        var str = Buffer.concat(data).toString('utf8');
+        const str = Buffer.concat(data).toString('utf8');
         console.log(info.topic, str);
-        var assert = require('assert');
+        const assert = require('assert');
         assert.equal(info.topic, 'foo.bar');
         assert.equal(str, 'hello');
     });
@@ -266,7 +266,7 @@ If you provide at least one `--remote=<host>` argument then the benchmark will b
 - `{Object} [options]` Configures the file system queue. Valid properties are listed below:
   - `{String} fsq_dir` The path to the file system queue directory. Note that the following sub-directories will be created under this directory if they don't exist: `messages`, `staging`, `topics` and `update`. Defaults to a directory named `fsq` in the `qlobber-fsq` module directory.
 
-  - `{Boolean} encode_topics` Whether to hex-encode message topics. Because topic strings form part of message filenames, they're first hex-encoded. If you can ensure that your message topics contain only valid filename characters, set this to `false` to skip encoding.
+  - `{Boolean} encode_topics` Whether to hex-encode message topics. Because topic strings form part of message filenames, they're first hex-encoded. If you can ensure that your message topics contain only valid filename characters, set this to `false` to skip encoding. Defaults to `true`.
 
   - `{Integer} split_topic_at` Maximum number of characters in a short topic. Short topics are contained entirely in a message's filename. Long topics are split so the first `split_topic_at` characters go in the filename and the rest are written to a separate file in the `topics` sub-directory. Obviously long topics are less efficient. Defaults to 200, which is the maximum for most common file systems. Note: if your `fsq_dir` is on an [`ecryptfs`](http://ecryptfs.org/) file system then you should set `split_topic_at` to 100.
 
@@ -292,7 +292,7 @@ If you provide at least one `--remote=<host>` argument then the benchmark will b
 
   - `{Integer} bucket_concurrency` The number of buckets to process at once. Defaults to 1.
 
-  - `{Integer} handler_concurrency` By default, a message is considered handled by a subscriber only when all its data has been read. If you set `handler_concurrency` to non-zero, a message is considered handled as soon as a subscriber receives it. The next message will then be processed straight away. The value of `handler-concurrency` limits the number of messages being handled by subscribers at any one time. Defaults to 0 (waits for all message data to be read).
+  - `{Integer} handler_concurrency` By default, a message is considered handled by a subscriber only when all its data has been read. If you set `handler_concurrency` to non-zero, a message is considered handled as soon as a subscriber receives it. The next message will then be processed straight away. The value of `handler_concurrency` limits the number of messages being handled by subscribers at any one time. Defaults to 0 (waits for all message data to be read).
 
   - `{Boolean} order_by_expiry` Pass messages to subscribers in order of their expiry time. If `true` then `bucket_base` and `bucket_num_chars` are forced to 1 so messages are written to a single bucket. Defaults to `false`.
 
@@ -313,6 +313,7 @@ If you provide at least one `--remote=<host>` argument then the benchmark will b
     - You can use this to filter the subscribed handler functions to be called for the message (by passing the filtered list as the third argument to `cb`).
 
     - If you want to ignore the message _at this time_ then pass `false` as the second argument to `cb`. `filter` will be called again later with the same message.
+
     - Defaults to a function which calls `cb(null, true, handlers)`.
 
     - `handlers` is an ES6 Set, or array if `options.dedup` is falsey.
@@ -323,11 +324,25 @@ If you provide at least one `--remote=<host>` argument then the benchmark will b
 
     - An array containing the filter functions is also available as the `filters` property of the `QlobberFSQ` object and can be modified at any time.
 
-  - `{Function (bucket)} get_disruptor` You can speed up message processing on a single multi-core server by using [shared memory LMAX Disruptors](https://github.com/davedoesdev/shared-memory-disruptor). Message metadata and (if it fits) payload will be send through the Disruptor. `get_disruptor` will be called for each bucket number and should return the Disruptor to use for that bucket or `null`. The same bucket can be used for more than one bucket if you wish.
+  - `{Function (bucket)} [get_disruptor]` You can speed up message processing on a single multi-core server by using [shared memory LMAX Disruptors](https://github.com/davedoesdev/shared-memory-disruptor). Message metadata and (if it fits) payload will be sent through the Disruptor. `get_disruptor` will be called for each bucket number and should return the Disruptor to use for that bucket or `null`. The same disruptor can be used for more than one bucket if you wish.
 
   - `{Integer} refresh_ttl` If you use a shared memory LMAX Disruptor for a bucket (see `get_disruptor` above), notification of new messages in the bucket is received through the Disruptor. However, checking for expired messages still needs to read the filesystem. `refresh_ttl` is the time (in milliseconds) between checking for expired messages when a Disruptor is in use. Defaults to 10 seconds.
 
   - `{Integer} disruptor_spin_interval` If a Disruptor is shared across multiple buckets or multiple `QlobberFSQ` instances, contention can occur when publishing a message. In this case [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb) will try again until it succeeds. `disruptor_spin_interval` is the time (in milliseconds) to wait before retrying. Defaults to 0.
+
+  - `{Object} [direct_handler]` Object with three methods, used for transferring messages direct from publisher to subscribers without writing them to disk:
+
+    - `{Function (filename, direct)} get_stream_for_publish` Called by [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb) when truthy `options.direct` is passed to it instead of writing data to disk. This method receives the name of the file to which data would have been written plus the value of `options.direct` that was passed to [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb). Whatever it returns will be returned by the call to [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb).
+
+    - `{Function (filename)} get_stream_for_subscribers` Called when a stream published by calling [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb) with truthy `options.direct` needs to be given to subscribers. It receives the name of the file to which data would have been written. It must return a [Readable](http://nodejs.org/api/stream.html#stream_class_stream_readable) stream.
+
+    - `{Function (filename, stream)} publish_stream_destroyed` Called when a stream returned by `get_stream_for_publish()` has been destroyed or the message has expired. It receives the name of the file passed to `get_stream_for_publish() and the destroyed stream.
+
+    - `{Function (filename)} publish_stream_expired` Called when a stream returned by `get_stream_for_publish()` has expired and should be destroyed. It receives the name of the file passed to `get_stream_for_publish()`.
+
+    - `{Function (filename, stream)} subscriber_stream_destroyed` Called when a stream returned by `get_stream_for_subscribers()` has been destroyed or the message has expired. It receives the name of the file passed to `get_stream_for_subscribers()` and the destroyed stream.
+
+    - `{Function (filename)} subscriber_stream_ignored` Called when a stream published by calling [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb) with truthy `options.direct` doesn't have any subscribers. It receives the name of the file to which data would have been written.
 
 <sub>Go: [TOC](#tableofcontents)</sub>
 
@@ -360,7 +375,7 @@ If you provide at least one `--remote=<host>` argument then the benchmark will b
       - `{Object} err` If an error occurred then details of the error, otherwise `null`.
 
 - `{Object} [options]` Optional settings for this subscription:
-  - `{Boolean} subscribe_to_existing` If `true` then `handler` will be called with any existing, unexpired messages that match `topic`, as well as new ones. Defaults to `false` (only new messages).
+  - `{Boolean} subscribe_to_existing` If `true` then `handler` will be called with any existing, unexpired messages that match `topic`, as well as new ones. Note that `handler` will only receive new streams that were published by calling [`publish`](#qlobberfsqprototypepublishtopic-payload-options-cb) with truthy `options.direct`, not existing direct streams.  Defaults to `false` (only new messages).
 
 - `{Function} [cb]` Optional function to call once the subscription has been registered. This will be passed the following argument:
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.
@@ -412,6 +427,13 @@ If you provide at least one `--remote=<host>` argument then the benchmark will b
     - If the Disruptor's elements aren't large enough to contain the message's metadata, the message won't be written  to the Disruptor and `cb` (below) will receive an error with a property `code` equal to the string `buffer-too-small`.
 
     - However, if the Disruptor's elements aren't large enough for the message's payload, the message _will_ be written to disk. The amount of space available in the Disruptor for the payload can be found via the `ephemeral_size` property on the stream returned by this function. If your message won't fit and you don't want to write it to disk, emit an `error` event on the stream without ending it.
+
+  - `{Any} direct` Defaults to `false`. If truthy:
+
+    - Writes an empty message to disk instead of any data.
+    - Calls the `direct_handler.get_stream_for_publish()` method that was passed to the [`QlobberFSQ constructor`](#qlobberfsqoptions). It will be passed the name of the file to which data would otherwise have been written and the value of `direct`.
+    - Returns the value that `direct_handler.get_stream_for_publish()` returns.
+    - Ignores `single` (i.e. publish to all interested subscribers).
 
 - `{Function} [cb]` Optional function to call once the message has been written to the file system queue. This will be called after the message has been moved into its bucket and is therefore available to subscribers in any `QlobberFSQ` object scanning the queue. It will be passed the following arguments:
   - `{Object} err` If an error occurred then details of the error, otherwise `null`.

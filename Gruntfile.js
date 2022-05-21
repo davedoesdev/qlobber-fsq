@@ -22,7 +22,8 @@ module.exports = function (grunt)
                 src: [
                     'test/common.js',
                     'test/test_spec.js',
-                    'test/lock_spec.js'
+                    'test/lock_spec.js',
+                    'test/disruptor_streams_spec.js'
                 ]
             },
             stress: {

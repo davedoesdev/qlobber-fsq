@@ -6,7 +6,14 @@ var options = JSON.parse(Buffer.from(process.argv[2], 'hex')),
     cb_count = 0,
     handlers = {},
     host = require('os').hostname(),
-    async = require('async');
+    async = require('async'),
+    crypto = require('crypto'),
+    { expect } = require('chai');
+
+if (options.handler_concurrency === null)
+{
+    options.handler_concurrency = Infinity;
+}
 
 //console.log(options);
 
@@ -31,6 +38,65 @@ if (options.disruptor)
     };
 
     options.bucket_stamp_size = 0;
+}
+
+if (options.direct)
+{
+    const { Disruptor, DisruptorReadStream } = require('shared-memory-disruptor');
+
+    options.direct_handler = new class
+    {
+        constructor()
+        {
+            this.streams = new Map();
+        }
+
+        get_stream_for_publish(unused_filename, unused_direct)
+        {
+            // we never publish direct in child
+            throw new Error('should not be called');
+        }
+
+        make_disruptor(filename)
+        {
+            return new Disruptor(`/${crypto.createHash('sha256').update(filename).digest('hex')}`,
+                                 options.num_elements,
+                                 1,
+                                 options.total,
+                                 options.index,
+                                 false,
+                                 false);
+        }
+
+        get_stream_for_subscribers(filename)
+        {
+            const rs = new DisruptorReadStream(this.make_disruptor(filename));
+            this.streams.set(filename, rs);
+            return rs;
+        }
+
+        publish_stream_destroyed(unused_filename, unused_stream)
+        {
+            throw new Error('should not be called');
+        }
+
+        publish_stream_expired(filename)
+        {
+            expect(this.streams.has(filename)).to.be.false;
+        }
+
+        subscriber_stream_destroyed(filename, stream)
+        {
+            this.streams.delete(filename);
+            stream.disruptor.release();
+        }
+
+        subscriber_stream_ignored(filename)
+        {
+            expect(this.streams.has(filename)).to.be.false;
+            this.make_disruptor(filename).release(true);
+        }
+    }();
 }
 
 var fsq = new QlobberFSQ(options);
@@ -84,19 +150,56 @@ process.on('message', function (msg)
         {
             //console.log('got', host, process.pid, msg.topic, info.topic, info.single, info.path, msg.handler);
 
-            cbs[cb_count] = cb;
-            send(
+            if (options.hash)
             {
-                type: 'received',
-                handler: msg.handler,
-                sum: sum(data),
-                info: info,
-                cb: cb_count,
-                host: host,
-                pid: process.pid
-            });
-            cb_count += 1;
+                const hash = crypto.createHash('sha256');
+
+                data.on('readable', function ()
+                {
+                    let chunk;
+                    while (chunk = this.read()) // eslint-disable-line no-cond-assign
+                    {
+                        hash.update(chunk);
+                    }
+                });
+
+                data.on('end', function ()
+                {
+                    const cbc = cb_count++;
+                    cbs[cbc] = cb;
+                    send(
+                    {
+                        type: 'received',
+                        handler: msg.handler,
+                        sum: hash.digest('hex'),
+                        info: info,
+                        cb: cbc,
+                        host: host,
+                        pid: process.pid
+                    });
+                });
+            }
+            else
+            {
+                const cbc = cb_count++;
+                cbs[cbc] = cb;
+                send(
+                {
+                    type: 'received',
+                    handler: msg.handler,
+                    sum: sum(data),
+                    info: info,
+                    cb: cbc,
+                    host: host,
+                    pid: process.pid
+                });
+            }
         };
+        
+        if (options.hash)
+        {
+            handlers[msg.handler].accept_stream = true;
+        }
 
         fsq.subscribe(msg.topic, handlers[msg.handler], function ()
         {

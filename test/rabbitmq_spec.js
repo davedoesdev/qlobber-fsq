@@ -5,12 +5,9 @@
           fsq_dir: false,
           sum: false,
           crypto: false,
-          events: false,
-          util: false,
           child_process: false,
           cp_remote: false,
           path: false,
-          util: false,
           argv: false,
           QlobberFSQ: false,
           os: false,
@@ -21,6 +18,8 @@
           rabbitmq_expected_results_after_remove_all: false,
           rabbitmq_expected_results_after_clear: false */
 "use strict";
+
+const { MPFSQBase } = require('./mpfsq_base.js');
 
 function rabbitmq_tests(name, QCons, num_queues, rounds, msglen, retry_prob, expected, f)
 {
@@ -395,277 +394,60 @@ function rabbitmq4(prefix, QCons, queues)
     //rabbitmq3(prefix, QCons, queues, 1000);
 }
 
-function MPFSQBase(child)
-{
-    events.EventEmitter.call(this);
-
-    var ths = this,
-        handlers = {},
-        handler_count = 0,
-        pub_cbs = {},
-        pub_cb_count = 0,
-        sub_cbs = {},
-        sub_cb_count = 0,
-        unsub_cbs = {},
-        unsub_cb_count = 0,
-        topics = {},
-        // https://github.com/nodejs/node/issues/7657
-        // https://github.com/libuv/libuv/issues/1099
-        send_queue = async.queue(function (msg, cb)
-        {
-            child.send(msg, cb);
-        });
-
-    child.on('error', function (err)
-    {
-        ths.emit('error', err);
-    });
-
-    child.on('exit', function (unused_code, unused_signal)
-    {
-         ths.emit('stop');
-        //console.log('exit', ths._host, code, signal);
-    });
-
-    child.on('message', function (msg)
-    {
-        var cb;
-
-        //console.log("parent got message", msg);
-
-        if (msg.type === 'start')
-        {
-            //console.log('got start', ths._host);
-            ths.emit('start');
-        }
-        else if (msg.type === 'stop')
-        {
-            send_queue.push({ type: 'exit' });
-        }
-        else if (msg.type === 'received')
-        {
-            //console.log('recv', msg.host, msg.pid, msg.info.topic, msg.info.single, msg.handler);
-            handlers[msg.handler](msg.sum, msg.info, function(err)
-            {
-                send_queue.push(
-                {
-                    type: 'recv_callback',
-                    cb: msg.cb,
-                    err: err
-                });
-            });
-        }
-        else if (msg.type === 'sub_callback')
-        {
-            cb = sub_cbs[msg.cb];
-            delete sub_cbs[msg.cb];
-            //console.log('sub_callback', ths._host, msg.cb, Object.keys(sub_cbs));
-            cb();
-        }
-        else if (msg.type === 'unsub_callback')
-        {
-            cb = unsub_cbs[msg.cb];
-            delete unsub_cbs[msg.cb];
-            //console.log('unsub_callback', ths._host, msg.cb, Object.keys(unsub_cbs));
-            cb();
-        }
-        else if (msg.type === 'pub_callback')
-        {
-            cb = pub_cbs[msg.cb];
-            delete pub_cbs[msg.cb];
-            //console.log('pub_callback', ths._host, msg.cb, Object.keys(pub_cbs));
-            cb(msg.err, msg.fname);
-        }
-    });
-
-    this.subscribe = function (topic, handler, cb)
-    {
-        handlers[handler_count] = handler;
-        handler.__count = handler_count;
-
-        sub_cbs[sub_cb_count] = cb;
-
-        topics[topic] = topics[topic] || {};
-        topics[topic][handler_count] = true;
-
-        send_queue.push(
-        {
-            type: 'subscribe',
-            topic: topic,
-            handler: handler_count,
-            cb: sub_cb_count
-        });
-
-        //console.log('subscribe', ths._host, topic, handler_count, sub_cb_count);
-
-        handler_count += 1;
-        sub_cb_count += 1;
-    };
-
-    this.unsubscribe = function (topic, handler, cb)
-    {
-        if (topic === undefined)
-        {
-            unsub_cbs[unsub_cb_count] = function ()
-            {
-                handlers = {};
-                topics = {};
-                cb();
-            };
-
-            send_queue.push(
-            {
-                type: 'unsubscribe',
-                cb: unsub_cb_count
-            });
-
-            unsub_cb_count += 1;
-        }
-        else if (handler === undefined)
-        {
-            var n = topics[topic].length;
-
-            topics[topic].forEach(function (h)
-            {
-                unsub_cbs[unsub_cb_count] = function ()
-                {
-                    delete handlers[h];
-                    n -= 1;
-                    if (n === 0)
-                    {
-                        delete topics[topic];
-                        cb();
-                    }
-                };
-
-                send_queue.push(
-                {
-                    type: 'unsubscribe',
-                    topic: topic,
-                    handler: h,
-                    cb: unsub_cb_count
-                });
-
-                unsub_cb_count += 1;
-            });
-        }
-        else
-        {
-            unsub_cbs[unsub_cb_count] = function ()
-            {
-                delete handlers[handler.__count];
-                cb();
-            };
-
-            send_queue.push(
-            {
-                type: 'unsubscribe',
-                topic: topic,
-                handler: handler.__count,
-                cb: unsub_cb_count
-            });
-
-            unsub_cb_count += 1;
-        }
-    };
-
-    this.publish = function (topic, payload, options, cb)
-    {
-        pub_cbs[pub_cb_count] = cb;
-
-        send_queue.push(
-        {
-            type: 'publish',
-            topic: topic,
-            payload: payload.toString('base64'),
-            options: options,
-            cb: pub_cb_count
-        });
-
-        //console.log('publish', ths._host, topic, pub_cb_count, Object.keys(pub_cbs));
-        pub_cb_count += 1;
-    };
-
-    this.stop_watching = function (cb)
-    {
-        send_queue.push({ type: 'stop_watching' });
-
-        if (cb)
-        {
-            this.once('stop', cb);
-        }
-    };
-}
-
-util.inherits(MPFSQBase, events.EventEmitter);
-
 function make_MPFSQ(use_disruptor)
 {
-    var Disruptor;
-    if (use_disruptor)
+    return class extends MPFSQBase
     {
-        Disruptor = require('shared-memory-disruptor').Disruptor;
-    }
-
-    function MPFSQ(options, total, index)
-    {
-        var num_buckets = QlobberFSQ.get_num_buckets(options.bucket_base,
-                                                     options.bucket_num_chars);
-
-        if (use_disruptor && (index === 0))
+        constructor(options, total, index)
         {
-            for (var i = 0; i < Math.min(total, num_buckets); i += 1)
+            const num_buckets = QlobberFSQ.get_num_buckets(options.bucket_base,
+                                                           options.bucket_num_chars);
+
+            if (use_disruptor && (index === 0))
             {
-                var d = new Disruptor('/test' + i,
-                                      20 * 1024,
-                                      20 * 1024,
-                                      total,
-                                      0,
-                                      true,
-                                      false);
-                d.release();
+                const { Disruptor } = require('shared-memory-disruptor');
+
+                for (let i = 0; i < Math.min(total, num_buckets); i += 1)
+                {
+                    const d = new Disruptor('/test' + i,
+                                            20 * 1024,
+                                            20 * 1024,
+                                            total,
+                                            0,
+                                            true,
+                                            false);
+                    d.release();
+                }
             }
+
+            options = Object.assign({}, options,
+            {
+                disruptor: use_disruptor,
+                num_elements: 20 * 1024,
+                element_size: 20 * 1024,
+                total: total,
+                index: index,
+                num_buckets: num_buckets
+            });
+
+            super(child_process.fork(path.join(__dirname, 'mpfsq', 'mpfsq.js'),
+                                     [Buffer.from(JSON.stringify(options)).toString('hex')]));
         }
-
-        options = Object.assign({}, options,
-        {
-            disruptor: use_disruptor,
-            num_elements: 20 * 1024,
-            element_size: 20 * 1024,
-            total: total,
-            index: index,
-            num_buckets: num_buckets
-        });
-
-        MPFSQBase.call(
-            this,
-            child_process.fork(path.join(__dirname, 'mpfsq', 'mpfsq.js'),
-                               [Buffer.from(JSON.stringify(options)).toString('hex')]),
-            options);
-    }
-
-    util.inherits(MPFSQ, MPFSQBase);
-
-    return MPFSQ;
+    };
 }
 
 function make_RemoteMPFSQ(hosts)
 {
-    function RemoteMPFSQ(options, total, index)
+    return class extends MPFSQBase
     {
-        this._host = hosts[index];
-
-        MPFSQBase.call(
-            this,
-            cp_remote.run(hosts[index],
-                          path.join(__dirname, 'mpfsq', 'mpfsq.js'),
-                          Buffer.from(JSON.stringify(options)).toString('hex')),
-            options);
-    }
-
-    util.inherits(RemoteMPFSQ, MPFSQBase);
-
-    return RemoteMPFSQ;
+        constructor(options, total, index)
+        {
+            super(cp_remote.run(hosts[index],
+                                path.join(__dirname, 'mpfsq', 'mpfsq.js'),
+                                Buffer.from(JSON.stringify(options)).toString('hex')));
+            this._host = hosts[index];
+        }
+    };
 }
 
 describe('rabbit', function ()

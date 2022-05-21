@@ -31,6 +31,8 @@ console.error = function wup()
     return orig_error.apply(this, arguments);
 };*/
 
+//process.on('uncaughtException', console.error);
+
 function read_all(s, cb)
 {
     var bufs = [];
@@ -88,7 +90,9 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             var r = orig_publish.call(this, topic, payload, options, cb);
 
-            if ((typeof payload !== 'string') && (!Buffer.isBuffer(payload)))
+            if ((typeof payload !== 'string') &&
+                (!Buffer.isBuffer(payload)) &&
+                !options.direct)
             {
                 expect(r.ephemeral_size).to.be.above(0);
             }
@@ -328,6 +332,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         {
             expect(info.topic).to.equal('foo');
             expect(info.single).to.equal(false);
+            expect(info.direct).to.equal(false);
             expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
             expect(info.fname.lastIndexOf(Buffer.from('foo').toString('hex') + '@', 0)).to.equal(0);
             expect(info.topic_path).to.equal(undefined);
@@ -697,6 +702,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
             {
                 expect(info.topic).to.equal('foo');
                 expect(info.single).to.equal(true);
+                expect(info.direct).to.equal(false);
                 expect(info.path.lastIndexOf(msg_dir, 0)).to.equal(0);
                 expect(info.fname.lastIndexOf(Buffer.from('foo').toString('hex') + '@', 0)).to.equal(0);
                 expect(data.toString('utf8')).to.equal('bar');
@@ -2047,9 +2053,8 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             stream.on('readable', function ()
             {
-                var chunk = stream.read();
-
-                if (chunk)
+                let chunk;
+                while (chunk = stream.read()) // eslint-disable-line no-cond-assign
                 {
                     len += chunk.length;
                     hash.update(chunk);
@@ -2115,6 +2120,256 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         stream_file = fs.createReadStream(path.join(__dirname, 'fixtures', 'random'));
         stream_file.pipe(stream_multi);
         stream_file.pipe(stream_single);
+    });
+
+    it('should support direct streaming', function (done)
+    {
+        var stream_mod = require('stream');
+
+        fsq.stop_watching(function ()
+        {
+            var fsq2 = make_fsq(1, 0, { direct_handler: new class
+            {
+                constructor()
+                {
+                    this.streams = new Map();
+                    this.gsfp_called = false;
+                    this.gsfs_called = false;
+                    this.psd_called = false;
+                    this.pse_called = false;
+                    this.ssd_called = false;
+                }
+
+                get_stream_for_publish(filename, direct)
+                {
+                    this.gsfp_called = true;
+                    expect(direct).to.equal('something truthy');
+                    const r = new stream_mod.PassThrough();
+                    this.streams.set(filename, r);
+                    return r;
+                }
+
+                get_stream_for_subscribers(filename)
+                {
+                    this.gsfs_called = true;
+                    return this.streams.get(filename);
+                }
+                
+                publish_stream_destroyed(unused_filename, unused_stream)
+                {
+                    this.psd_called = true;
+                }
+
+                publish_stream_expired(unused_filename)
+                {
+                    this.pse_called = true;
+                }
+
+                subscriber_stream_destroyed(filename, stream)
+                {
+                    this.ssd_called = true;
+                    const s = this.streams.get(filename);
+                    expect(s).to.equal(stream);
+                    this.streams.delete(filename);
+                }
+
+                subscriber_stream_ignored(unused_filename)
+                {
+                    throw new Error('should not be called');
+                }
+            }()});
+
+            fsq2.on('start', function ()
+            {
+                var stream_direct,
+                    stream_file,
+                    sub_called = false,
+                    pub_called = false;
+
+                function check()
+                {
+                    if (pub_called && sub_called)
+                    {
+                        expect(fsq2._direct_handler.gsfp_called).to.be.true;
+                        expect(fsq2._direct_handler.gsfs_called).to.be.true;
+                        expect(fsq2._direct_handler.psd_called).to.be.false;
+                        expect(fsq2._direct_handler.pse_called).to.be.false;
+                        expect(fsq2._direct_handler.ssd_called).to.be.true;
+                        fsq2.stop_watching(done);
+                    }
+                }
+
+                function handler(stream, info, cb)
+                {
+                    var hash = crypto.createHash('sha256'),
+                        len = 0;
+
+                    expect(info.single).to.equal(false);
+                    expect(info.direct).to.equal(true);
+
+                    stream.on('readable', function ()
+                    {
+                        let chunk;
+                        while (chunk = stream.read()) // eslint-disable-line no-cond-assign
+                        {
+                            len += chunk.length;
+                            hash.update(chunk);
+                        }
+                    });
+
+                    stream.on('end', function ()
+                    {
+                        expect(len).to.equal(1024 * 1024);
+                        expect(hash.digest('hex')).to.equal('268e1a23a9da868b62b12e020061c98449568c4af9cf9070c8738fe1b457ed9c');
+
+                        cb(null, function ()
+                        {
+                            expect(sub_called).to.equal(false);
+                            sub_called = true;
+                            check();
+                        });
+                    });
+                }
+
+                handler.accept_stream = true;
+                
+                fsq2.subscribe('foo', handler);
+                
+                stream_direct = fsq2.publish('foo', { direct: 'something truthy' }, function (err)
+                {
+                    if (err) { return done(err); }
+                    expect(pub_called).to.equal(false);
+                    pub_called = true;
+                    check();
+                });
+
+                stream_file = fs.createReadStream(path.join(__dirname, 'fixtures', 'random'));
+                stream_file.pipe(stream_direct);
+            });
+        });
+    });
+
+    it('should support direct streaming with readable', function (done)
+    {
+        var stream_mod = require('stream');
+
+        fsq.stop_watching(function ()
+        {
+            var fsq2 = make_fsq(1, 0, { direct_handler: new class
+            {
+                constructor()
+                {
+                    this.streams = new Map();
+                    this.gsfp_called = false;
+                    this.gsfs_called = false;
+                    this.psd_called = false;
+                    this.pse_called = false;
+                    this.ssd_called = false;
+                }
+
+                get_stream_for_publish(filename, direct)
+                {
+                    this.gsfp_called = true;
+                    expect(direct).to.be.an.instanceof(stream_mod.Readable);
+                    this.streams.set(filename, direct);
+                    return direct;
+                }
+
+                get_stream_for_subscribers(filename)
+                {
+                    this.gsfs_called = true;
+                    return this.streams.get(filename);
+                }
+
+                publish_stream_destroyed(unused_filename, unused_stream)
+                {
+                    this.psd_called = true;
+                }
+
+                publish_stream_expired(unused_filename)
+                {
+                    this.pse_called = true;
+                }
+
+                subscriber_stream_destroyed(filename, stream)
+                {
+                    this.ssd_called = true;
+                    const s = this.streams.get(filename);
+                    expect(s).to.equal(stream);
+                    this.streams.delete(filename);
+                }
+            }()});
+
+            fsq2.on('start', function ()
+            {
+                var stream_direct,
+                    stream_file,
+                    sub_called = false,
+                    pub_called = false;
+
+                function check()
+                {
+                    if (pub_called && sub_called)
+                    {
+                        expect(fsq2._direct_handler.gsfp_called).to.be.true;
+                        expect(fsq2._direct_handler.gsfs_called).to.be.true;
+                        expect(fsq2._direct_handler.psd_called).to.be.false;
+                        expect(fsq2._direct_handler.pse_called).to.be.false;
+                        expect(fsq2._direct_handler.ssd_called).to.be.true;
+                        fsq2.stop_watching(done);
+                    }
+                }
+
+                function handler(stream, info, cb)
+                {
+                    var hash = crypto.createHash('sha256'),
+                        len = 0;
+
+                    expect(stream).to.equal(stream_file);
+                    expect(info.single).to.equal(false);
+                    expect(info.direct).to.equal(true);
+
+                    stream.on('readable', function ()
+                    {
+                        let chunk;
+                        while (chunk = stream.read()) // eslint-disable-line no-cond-assign
+                        {
+                            len += chunk.length;
+                            hash.update(chunk);
+                        }
+                    });
+
+                    stream.on('end', function ()
+                    {
+                        expect(len).to.equal(1024 * 1024);
+                        expect(hash.digest('hex')).to.equal('268e1a23a9da868b62b12e020061c98449568c4af9cf9070c8738fe1b457ed9c');
+
+                        cb(null, function ()
+                        {
+                            expect(sub_called).to.equal(false);
+                            sub_called = true;
+                            check();
+                        });
+                    });
+                }
+
+                handler.accept_stream = true;
+                
+                fsq2.subscribe('foo', handler);
+                
+                stream_file = fs.createReadStream(path.join(__dirname, 'fixtures', 'random'));
+
+                stream_direct = fsq2.publish('foo', { direct: stream_file, single: true }, function (err)
+                {
+                    if (err) { return done(err); }
+                    expect(pub_called).to.equal(false);
+                    pub_called = true;
+                    check();
+                });
+
+                expect(stream_direct).to.equal(stream_file);
+            });
+        });
     });
 
     it('should pipe to more than one stream', function (done)
@@ -2216,9 +2471,8 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
 
             stream.on('readable', function ()
             {
-                var chunk = stream.read();
-
-                if (chunk)
+                let chunk;
+                while (chunk = stream.read()) // eslint-disable-line no-cond-assign
                 {
                     len += chunk.length;
                     hash.update(chunk);
@@ -3017,6 +3271,170 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
         }
     });
 
+    it('should handle closed direct stream before given to subscribers', function (done)
+    {
+        var stream_mod = require('stream');
+
+        fsq.stop_watching(function ()
+        {
+            var fsq2 = make_fsq(1, 0, { direct_handler: new class
+            {
+                constructor()
+                {
+                    this.streams = new Map();
+                    this.gsfp_called = false;
+                    this.gsfs_called = false;
+                    this.psd_called = false;
+                    this.ssd_called = false;
+                }
+
+                get_stream_for_publish(filename, direct)
+                {
+                    this.gsfp_called = true;
+                    expect(direct).to.equal('something truthy');
+                    const r = new stream_mod.PassThrough();
+                    this.streams.set(filename, r);
+                    return r;
+                }
+
+                get_stream_for_subscribers(filename)
+                {
+                    expect(this.gsfs_called).to.be.false;
+                    this.gsfs_called = true;
+                    expect(this.gsfp_called).to.be.true;
+                    expect(this.psd_called).to.be.true;
+                    expect(this.ssd_called).to.be.false;
+                    const r = this.streams.get(filename);
+                    expect(r).to.be.undefined;
+                    fsq2.stop_watching(done);
+                    return r;
+                }
+
+                publish_stream_destroyed(filename, stream)
+                {
+                    this.psd_called = true;
+                    const s = this.streams.get(filename);
+                    expect(s).to.equal(stream);
+                    this.streams.delete(filename);
+                }
+
+                subscriber_stream_destroyed(unused_filename, unused_stream)
+                {
+                    this.ssd_called = true;
+                }
+            }()});
+
+            fsq2.on('start', function ()
+            {
+                var pub_called = false,
+                    stream_direct;
+
+                function handler(unused_stream, unused_info, unused_cb)
+                {
+                    done(new Error('should not be called'));
+                }
+                handler.accept_stream = true;
+                fsq2.subscribe('foo', handler);
+                
+                stream_direct = fsq2.publish('foo', { direct: 'something truthy' }, function (err)
+                {
+                    if (err) { return done(err); }
+                    expect(pub_called).to.equal(false);
+                    pub_called = true;
+                });
+                stream_direct.destroy();
+            });
+        });
+
+    });
+
+    it('should handle errored direct stream before given to subscribers', function (done)
+    {
+        var stream_mod = require('stream'),
+            warning_called = false;
+
+        fsq.stop_watching(function ()
+        {
+            var fsq2 = make_fsq(1, 0, { direct_handler: new class
+            {
+                constructor()
+                {
+                    this.streams = new Map();
+                    this.gsfp_called = false;
+                    this.gsfs_called = false;
+                    this.psd_called = false;
+                    this.ssd_called = false;
+                }
+
+                get_stream_for_publish(filename, direct)
+                {
+                    this.gsfp_called = true;
+                    expect(direct).to.equal('something truthy');
+                    const r = new stream_mod.PassThrough();
+                    this.streams.set(filename, r);
+                    return r;
+                }
+
+                get_stream_for_subscribers(filename)
+                {
+                    expect(this.gsfs_called).to.be.false;
+                    this.gsfs_called = true;
+                    expect(warning_called).to.be.true;
+                    expect(this.gsfp_called).to.be.true;
+                    expect(this.psd_called).to.be.true;
+                    expect(this.ssd_called).to.be.false;
+                    expect(this.streams.has(filename)).to.be.false;
+                    fsq2.stop_watching(done);
+                    return null;
+                }
+
+                publish_stream_destroyed(filename, stream)
+                {
+                    this.psd_called = true;
+                    const s = this.streams.get(filename);
+                    expect(s).to.equal(stream);
+                    this.streams.delete(filename);
+                }
+
+                subscriber_stream_destroyed(unused_filename, unused_stream)
+                {
+                    this.ssd_called = true;
+                }
+            }()});
+
+            fsq2.on('start', function ()
+            {
+                var pub_called = false,
+                    stream_direct;
+
+                function handler(unused_stream, unused_info, unused_cb)
+                {
+                    done(new Error('should not be called'));
+                }
+                handler.accept_stream = true;
+                fsq2.subscribe('foo', handler);
+
+                fsq2.on('warning', function (err)
+                {
+                    warning_called = true;
+                    expect(err.message).to.equal('some error');
+                    expect(this._direct_handler.gsfp_called).to.be.true;
+                    expect(this._direct_handler.gsfs_called).to.be.false;
+                    expect(this._direct_handler.psd_called).to.be.false;
+                    expect(this._direct_handler.ssd_called).to.be.false;
+                });
+                
+                stream_direct = fsq2.publish('foo', { direct: 'something truthy' }, function (err)
+                {
+                    if (err) { return done(err); }
+                    expect(pub_called).to.equal(false);
+                    pub_called = true;
+                });
+                stream_direct.destroy(new Error('some error'));
+            });
+        });
+    });
+
     it('should support disabling work queue (single messages)', function (done)
     {
         fsq.stop_watching(function ()
@@ -3506,7 +3924,7 @@ describe('qlobber-fsq (getdents_size=' + getdents_size + ', use_disruptor=' + us
                     expect(err).not.to.exist;
                     expect(msg).to.equal('dummy');
 
-                    process.nextTick(function ()
+                    setImmediate(function ()
                     {
                         expect(ended).to.equal(true);
                         fsq.publish('foo', { single: single_supported }).end('bar');
