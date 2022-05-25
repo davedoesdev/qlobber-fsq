@@ -1,23 +1,23 @@
 environment:
   REQUIRE_SINGLE: true
   matrix:
-    - nodejs_version: "16.14.0"
+    - nodejs_version: "18.2.0"
       TARGET: test
-    - nodejs_version: "16.14.0"
+    - nodejs_version: "18.2.0"
       TARGET: stress
-    - nodejs_version: "16.14.0"
+    - nodejs_version: "18.2.0"
       TARGET: multi
-    - nodejs_version: "14.19.0"
+    - nodejs_version: "16.15.0"
       TARGET: test
-    - nodejs_version: "14.19.0"
+    - nodejs_version: "16.15.0"
       TARGET: stress
-    - nodejs_version: "14.19.0"
+    - nodejs_version: "16.15.0"
       TARGET: multi
-    - nodejs_version: "12.22.10"
+    - nodejs_version: "14.19.3"
       TARGET: test
-    - nodejs_version: "12.22.10"
+    - nodejs_version: "14.19.3"
       TARGET: stress
-    - nodejs_version: "12.22.10"
+    - nodejs_version: "14.19.3"
       TARGET: multi
 
 install:

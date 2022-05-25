@@ -23,7 +23,7 @@ module.exports = function (grunt)
                     'test/common.js',
                     'test/test_spec.js',
                     'test/lock_spec.js',
-                    'test/disruptor_streams_spec.js'
+                    ...(process.platform === 'win32' ? [] : ['test/disruptor_streams_spec.js'])
                 ]
             },
             stress: {
