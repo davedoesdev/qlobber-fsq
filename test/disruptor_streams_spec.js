@@ -16,14 +16,21 @@ class RandomStream extends Readable {
         this.size = size;
         this.i = i;
         this.hash = crypto.createHash('sha256');
+        this.reading = false;
     }
 
-    _read(size) {
+    _read() {
+        if (this.reading) {
+            return;
+        }
+        this.reading = true;
+
         if (this.size === 0) {
             return this.push(null);
         }
 
-        crypto.randomBytes(Math.min(size, this.size), (err, buf) => {
+        crypto.randomBytes(this.size, (err, buf) => {
+            this.reading = false;
             if (err) {
                 return this.emit('error', err);
             }
@@ -32,7 +39,9 @@ class RandomStream extends Readable {
             if (this.size === 0) {
                 this.digest = this.hash.digest('hex');
             }
-            this.push(buf);
+            if (this.push(buf)) {
+                setImmediate(() => this._read());
+            }
         });
     }
 }
