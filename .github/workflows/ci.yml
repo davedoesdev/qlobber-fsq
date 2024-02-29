@@ -8,12 +8,12 @@ jobs:
 
         strategy:
             matrix:
-                node-version: [14, 16, 18]
+                node-version: [16, 18, 20]
                 target: [test, stress, multi, disruptor, remote, coverage]
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
 
             - name: Update APT
               run: sudo apt update
@@ -22,7 +22,7 @@ jobs:
               run: sudo apt install socat
 
             - name: Use Node.js
-              uses: actions/setup-node@v2
+              uses: actions/setup-node@v4
               with:
                 node-version: ${{ matrix.node-version }}
 
@@ -53,6 +53,6 @@ jobs:
 
             - name: Coveralls
               if: matrix.target == 'coverage'
-              uses: coverallsapp/github-action@master
+              uses: coverallsapp/github-action@v2
               with:
                 github-token: ${{ secrets.GITHUB_TOKEN }}

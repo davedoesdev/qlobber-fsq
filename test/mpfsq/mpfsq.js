@@ -1,5 +1,7 @@
 "use strict";
 
+(async function () {
+
 var options = JSON.parse(Buffer.from(process.argv[2], 'hex')),
     QlobberFSQ = require('../..').QlobberFSQ,
     cbs = {},
@@ -8,7 +10,7 @@ var options = JSON.parse(Buffer.from(process.argv[2], 'hex')),
     host = require('os').hostname(),
     async = require('async'),
     crypto = require('crypto'),
-    { expect } = require('chai');
+    { expect } = await import('chai');
 
 if (options.handler_concurrency === null)
 {
@@ -275,3 +277,5 @@ process.on('message', function (msg)
         }
     }
 });
+
+})();

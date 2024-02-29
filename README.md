@@ -443,7 +443,7 @@ If you provide at least one `--remote=<host>` argument then the benchmark will b
 
 **Return:**
 
-`{Stream}` A [Writable stream](http://nodejs.org/api/stream.html#stream_class_stream_writable) if no `payload` was passed, otherwise `undefined`.
+`{Stream | undefined}` A [Writable stream](http://nodejs.org/api/stream.html#stream_class_stream_writable) if no `payload` was passed, otherwise `undefined`.
 
 <sub>Go: [TOC](#tableofcontents) | [QlobberFSQ.prototype](#toc_qlobberfsqprototype)</sub>
 

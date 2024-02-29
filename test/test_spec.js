@@ -10,7 +10,6 @@
          async: false,
          wu: false,
          path: false,
-         crypto: false,
          lsof: false,
          rimraf: false,
          ignore_ebusy: false,
@@ -19,6 +18,8 @@
          os: false,
          argv: false*/
 "use strict";
+
+const crypto = require('crypto');
 
 /*var orig_error = console.error;
 

@@ -6,10 +6,11 @@
           expect: false,
           msg_dir: false,
           sum: false,
-          crypto: false,
           argv: false,
           single_supported: false */
 "use strict";
+
+const crypto = require('crypto');
 
 function multiple_queues(use_disruptor)
 {

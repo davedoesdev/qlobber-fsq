@@ -4,7 +4,6 @@
           expect: false,
           fsq_dir: false,
           sum: false,
-          crypto: false,
           child_process: false,
           cp_remote: false,
           path: false,
@@ -19,6 +18,7 @@
           rabbitmq_expected_results_after_clear: false */
 "use strict";
 
+const crypto = require('crypto');
 const { MPFSQBase } = require('./mpfsq_base.js');
 
 function rabbitmq_tests(name, QCons, num_queues, rounds, msglen, retry_prob, expected, f)

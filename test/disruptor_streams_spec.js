@@ -5,10 +5,14 @@ const crypto = require('crypto');
 const os = require('os');
 const { Readable } = require('stream');
 const { times } = require('async');
-const { expect } = require('chai');
 const { QlobberFSQ } = require('..');
 const { Disruptor, DisruptorWriteStream } = require('shared-memory-disruptor');
 const { MPFSQBase } = require('./mpfsq_base.js');
+
+let expect;
+before(async () => {
+    ({ expect } = await import('chai'));
+});
 
 class RandomStream extends Readable {
     constructor(size, i) {

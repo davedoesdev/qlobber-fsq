@@ -31,16 +31,17 @@ catch (ex)
 }
 global.fs = require('fs');
 global.path = require('path');
-global.crypto = require('crypto');
 global.os = require('os');
 global.events = require('events');
 global.util = require('util');
 global.child_process = require('child_process');
-global.rimraf = require('rimraf');
+global.rimraf = util.callbackify(require('rimraf').rimraf);
 global.async = require('async');
 global.wu = require('wu');
 global.constants = require('constants');
-global.expect = require('chai').expect;
+before(async () => {
+    ({ expect: global.expect } = await import('chai'));
+});
 global.cp_remote = require('cp-remote');
 global.QlobberFSQ = require('..').QlobberFSQ;
 global.argv = require('yargs').argv;
