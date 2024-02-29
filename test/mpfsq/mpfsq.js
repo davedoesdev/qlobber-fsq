@@ -1,6 +1,7 @@
 "use strict";
 
-(async function () {
+(async function ()
+{
 
 var options = JSON.parse(Buffer.from(process.argv[2], 'hex')),
     QlobberFSQ = require('../..').QlobberFSQ,

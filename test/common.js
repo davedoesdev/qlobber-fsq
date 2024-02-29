@@ -1,4 +1,5 @@
 /*globals path: false,
+          util: false,
           argv: false,
           fsq_dir: false,
           constants: false,
@@ -39,7 +40,8 @@ global.rimraf = util.callbackify(require('rimraf').rimraf);
 global.async = require('async');
 global.wu = require('wu');
 global.constants = require('constants');
-before(async () => {
+before(async () =>
+{
     ({ expect: global.expect } = await import('chai'));
 });
 global.cp_remote = require('cp-remote');
