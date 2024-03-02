@@ -1,0 +1,27 @@
+name: win-ci
+
+on: [push, pull_request]
+
+jobs:
+    test:
+        runs-on: windows-latest
+
+        strategy:
+            matrix:
+                node-version: [16, 18, 20]
+                target: [test, stress, multi]
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Use Node.js
+              uses: actions/setup-node@v4
+              with:
+                node-version: ${{ matrix.node-version }}
+
+            - name: Install packages
+              run: npm install
+
+            - name: Run tests
+              run: npm run ${{ matrix.target }}
